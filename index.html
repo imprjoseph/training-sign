@@ -5,26 +5,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>內政部國土署 個資說明會及教育訓練</title>
-  <link rel="stylesheet" href="style.css?v=19">
+  <link rel="stylesheet" href="style.css">
   <script>
-  // ── API module (inline) ──
-  window.API = (function() {
-    var GAS_URL = 'https://script.google.com/macros/s/AKfycbw4ev7HTgCFRxeQCDGy3LM25eN5OTwlu_xK20ZxX7wtwpwUEYA6jXoe26UuHpbMSaGGZw/exec';
-    async function call(action, data) {
+  // GAS API
+  window.API = {
+    _url: 'https://script.google.com/macros/s/AKfycbw4ev7HTgCFRxeQCDGy3LM25eN5OTwlu_xK20ZxX7wtwpwUEYA6jXoe26UuHpbMSaGGZw/exec',
+    call: async function(action, data) {
       data = data || {};
-      var payload = Object.assign({ action: action }, data);
-      var resp = await fetch(GAS_URL, {
-        method: 'POST',
-        redirect: 'follow',
-        body: JSON.stringify(payload)
-      });
-      return resp.json();
+      var body = JSON.stringify(Object.assign({action: action}, data));
+      var r = await fetch(this._url, {method:'POST', redirect:'follow', body: body});
+      return r.json();
     }
-    return {
-      call: call,
-      getUrl: function() { return GAS_URL; }
-    };
-  })();
+  };
   </script>
 </head>
 <body>
@@ -60,7 +52,7 @@
 
 <!-- ── Hero Section：純 Banner 版 ── -->
 <section class="hero hero-banner-only" id="hero">
-  <div class="hero-bg" id="heroBg" style="background-image:url('https://raw.githubusercontent.com/imprjoseph/training-sign/main/WEB_BANNER_1920x480_optimized.webp');background-size:cover;background-position:center top;"></div>
+  <div class="hero-bg" id="heroBg" style="background-image:url('https://raw.githubusercontent.com/imprjoseph/training-sign/main/WEB_BANNER_1920x480_optimized.webp');background-size:cover;background-position:center top;background-repeat:no-repeat;"></div>
   <div class="hero-overlay"></div>
   <div class="hero-content hero-content-minimal">
     <div class="hero-actions">
@@ -404,10 +396,8 @@ window.onload = function() {
   initScrollBehavior();
 };
 
-// ── API 請求 ── (GitHub Pages)
 async function api(action, data) {
-  data = data || {};
-  return API.call(action, data);
+  return window.API.call(action, data || {});
 }
 
 // ────────────────────────────────────────────────────────────
@@ -440,9 +430,12 @@ async function loadSettings() {
     heroBg.style.backgroundPosition = 'center center';
     heroBg.style.backgroundRepeat = 'no-repeat';
     console.log('✅ Banner 已套用');
-  var _o = document.getElementById('infoOrganizer'); if (_o && settings.activityOrganizer) _o.textContent = settings.activityOrganizer;
-  var _t = document.getElementById('infoTitle');     if (_t && settings.activityTitle)    _t.textContent = settings.activityTitle;
-  var _p = document.getElementById('infoPeriod');    if (_p && settings.activityPeriod)   _p.textContent = settings.activityPeriod;
+  ['infoOrganizer','activityOrganizer','infoTitle','activityTitle','infoPeriod','activityPeriod'].forEach(function(k,i) {
+    if (i%2===0) { var el=document.getElementById(k); if(el && settings[['activityOrganizer','activityTitle','activityPeriod'][Math.floor(i/2)]]) el.textContent=settings[['activityOrganizer','activityTitle','activityPeriod'][Math.floor(i/2)]]; }
+  });
+  var _o=document.getElementById('infoOrganizer'); if(_o&&settings.activityOrganizer) _o.textContent=settings.activityOrganizer;
+  var _t=document.getElementById('infoTitle');     if(_t&&settings.activityTitle)    _t.textContent=settings.activityTitle;
+  var _p=document.getElementById('infoPeriod');    if(_p&&settings.activityPeriod)   _p.textContent=settings.activityPeriod;
   } else {
     console.warn('⚠️ Settings 裡沒有 bannerUrl 或 bannerDataUrl');
   }
