@@ -5,8 +5,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>內政部國土署 個資說明會及教育訓練</title>
-  <link rel="stylesheet" href="style.css?v=18">
-  <script src="api.js"></script>
+  <link rel="stylesheet" href="style.css?v=19">
+  <script>
+  // ── API module (inline) ──
+  window.API = (function() {
+    var GAS_URL = 'https://script.google.com/macros/s/AKfycbw4ev7HTgCFRxeQCDGy3LM25eN5OTwlu_xK20ZxX7wtwpwUEYA6jXoe26UuHpbMSaGGZw/exec';
+    async function call(action, data) {
+      data = data || {};
+      var payload = Object.assign({ action: action }, data);
+      var resp = await fetch(GAS_URL, {
+        method: 'POST',
+        redirect: 'follow',
+        body: JSON.stringify(payload)
+      });
+      return resp.json();
+    }
+    return {
+      call: call,
+      getUrl: function() { return GAS_URL; }
+    };
+  })();
+  </script>
 </head>
 <body>
 

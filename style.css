@@ -74,7 +74,7 @@ body { color: var(--text); background: var(--white); line-height: 1.7; padding-t
 .hero-bg {
   position: absolute;
   inset: 0;
-  background-image: url('https://lh3.googleusercontent.com/d/1eHDTFSLQcDeFOz9x7i3iA3bv3Bqh6GgB');
+  background-image: url('https://raw.githubusercontent.com/imprjoseph/training-sign/main/WEB_BANNER_1920x480_optimized.webp');
   background-color: #0f2544;
   background-size: cover;
   background-position: center top;
@@ -312,9 +312,9 @@ body { color: var(--text); background: var(--white); line-height: 1.7; padding-t
   transition: all .2s;
 }
 .tab-btn.active, .tab-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
-.sessions-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.sessions-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .session-card {
-  background: var(--white); border-radius: var(--radius-l); padding: 18px 20px;
+  background: var(--white); border-radius: var(--radius-l); padding: 14px 16px;
   box-shadow: var(--shadow); border: 1px solid var(--border);
   transition: transform .2s;
   display: flex;
@@ -322,13 +322,13 @@ body { color: var(--text); background: var(--white); line-height: 1.7; padding-t
 }
 .session-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-l); }
 .session-card.is-full { opacity: .85; }
-.session-card-header { display: flex; gap: 8px; margin-bottom: 12px; }
+.session-card-header { display: flex; gap: 8px; margin-bottom: 6px; }
 .session-region { background: var(--primary); color: #fff; padding: 3px 12px; border-radius: 20px; font-size: .8rem; font-weight: 700; }
 .session-slot { background: var(--primary-xl); color: var(--primary-l); padding: 3px 12px; border-radius: 20px; font-size: .8rem; }
-.session-name { font-size: 1.05rem; font-weight: 700; color: var(--primary); margin-bottom: 12px; }
-.session-details { margin-bottom: 8px; }
-.session-detail { font-size: .875rem; color: var(--text-s); padding: 2px 0; display: flex; gap: 8px; align-items: flex-start; }
-.quota-bar { height: 6px; background: #e2e8f0; border-radius: 3px; margin-bottom: 6px; overflow: hidden; }
+.session-name { font-size: 1rem; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+.session-details { display: flex; flex-direction: column; gap: 1px; margin-bottom: 6px; }
+.session-detail { font-size: .85rem; color: var(--text-s); padding: 0; display: flex; gap: 6px; align-items: flex-start; line-height: 1.35; }
+.quota-bar { height: 5px; background: #e2e8f0; border-radius: 3px; margin-bottom: 4px; overflow: hidden; }
 .quota-fill { height: 100%; background: linear-gradient(90deg, #16a34a, #22c55e); border-radius: 3px; transition: width .5s; }
 .quota-text { font-size: .8rem; color: var(--text-s); margin-bottom: 12px; }
 .btn-session {
@@ -485,7 +485,8 @@ body { color: var(--text); background: var(--white); line-height: 1.7; padding-t
 .badge-checkin   { background: #dbeafe; color: #1d4ed8; }
 
 /* ── RWD ── */
-@media (max-width: 768px) {
+@media (max-width: 480px) {
+  .sessions-grid { grid-template-columns: repeat(2, 1fr); }
   .about-grid { grid-template-columns: repeat(2, 1fr); }
   .nav-links { display: none; }
   .hamburger { display: block; }
@@ -494,7 +495,7 @@ body { color: var(--text); background: var(--white); line-height: 1.7; padding-t
 
   .hero-bg {
     inset: 0;
-    background-image: url('https://lh3.googleusercontent.com/d/1eHDTFSLQcDeFOz9x7i3iA3bv3Bqh6GgB');
+    background-image: url('https://raw.githubusercontent.com/imprjoseph/training-sign/main/WEB_BANNER_1920x480_optimized.webp');
     background-color: #0f2544;
     background-size: cover;
     background-position: center top;
@@ -522,7 +523,6 @@ body { color: var(--text); background: var(--white); line-height: 1.7; padding-t
   .form-row { grid-template-columns: 1fr; }
   .course-layout { grid-template-columns: 1fr; }
   .course-meta-grid { grid-template-columns: 1fr; }
-  .sessions-grid { grid-template-columns: 1fr; }
   .float-btn { bottom: 16px; right: 16px; }
   }
 /* ── 補充 JS render 用到的 class ── */
