@@ -568,3 +568,65 @@ body { color: var(--text); background: var(--white); line-height: 1.7; padding-t
   display: flex;
   flex-direction: column;
 }
+
+
+/* ── Banner 下方資訊列：按鈕移至右側 ── */
+.hero-info-inner {
+  justify-content: flex-start;
+  gap: 18px;
+}
+
+.hero-info-spacer {
+  flex: 1 1 auto;
+  min-width: 16px;
+}
+
+.hero-info-actions {
+  margin-left: auto;
+  flex: 0 0 auto;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+}
+
+.hero-info-bar .btn-hero,
+.hero-info-bar .btn-hero-secondary {
+  padding: 8px 20px;
+  font-size: .88rem;
+  line-height: 1.2;
+  box-shadow: none;
+  white-space: nowrap;
+}
+
+.hero-info-bar .btn-hero-secondary {
+  background: rgba(255,255,255,.12);
+}
+
+@media (max-width: 768px) {
+  .hero-info-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 0 16px;
+  }
+
+  .hero-info-spacer,
+  .hero-info-divider {
+    display: none;
+  }
+
+  .hero-info-actions {
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    padding-top: 4px;
+  }
+
+  .hero-info-bar .btn-hero,
+  .hero-info-bar .btn-hero-secondary {
+    flex: 1 1 130px;
+    text-align: center;
+    padding: 10px 12px;
+  }
+}
