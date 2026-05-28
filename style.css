@@ -27,7 +27,7 @@
 }
 
 html { scroll-behavior: smooth; }
-body { color: var(--text); background: var(--white); line-height: 1.7; padding-top: 64px; margin-right: calc(100vw - 100%); }
+body { color: var(--text); background: var(--white); line-height: 1.7; padding-top: 64px; overflow-x: hidden; }
 
 /* ── 導覽列 ── */
 .navbar {
@@ -485,46 +485,67 @@ body { color: var(--text); background: var(--white); line-height: 1.7; padding-t
 .badge-checkin   { background: #dbeafe; color: #1d4ed8; }
 
 /* ── RWD ── */
-@media (max-width: 480px) {
-  .sessions-grid { grid-template-columns: repeat(2, 1fr); }
-  .about-grid { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 1024px) {
+  .nav-inner { padding: 0 18px; }
+  .nav-links a { padding: 6px 8px; font-size: .82rem; }
+  .about-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sessions-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .course-layout { gap: 28px; }
+}
+
+@media (max-width: 768px) {
+  body { padding-top: 60px; }
+  .nav-inner { height: 60px; padding: 0 16px; }
   .nav-links { display: none; }
   .hamburger { display: block; }
+  .nav-brand { min-width: 0; }
+  .nav-title { font-size: .9rem; overflow: hidden; text-overflow: ellipsis; }
+  .nav-logo { height: 32px; }
 
-  .hero { background: #0f2544; }
-
-  .hero-bg {
-    inset: 0;
-    background-image: url('https://raw.githubusercontent.com/imprjoseph/training-sign/main/WEB_BANNER_1920x480_optimized.webp');
-    background-color: #0f2544;
-    background-size: cover;
-    background-position: center top;
-  }
-
-  .hero-overlay {
-    background: rgba(10, 35, 70, 0.25);
-  }
-
-  .hero-content-minimal {
-    padding: 0 16px 18px;
-    align-items: flex-end;
-  }
-
-  .hero-actions {
-    gap: 8px;
-  }
-
+  .hero,
+  .hero-banner-only { height: 320px; min-height: 320px; }
+  .hero-bg { background-size: cover; background-position: center top; }
+  .hero-overlay { background: rgba(10, 35, 70, 0.22); }
+  .hero-content-minimal { padding: 0 16px 20px; justify-content: center; align-items: flex-end; }
+  .hero-actions { justify-content: center; gap: 10px; }
   .btn-hero,
-  .btn-hero-secondary {
-    padding: 9px 22px;
-    font-size: .88rem;
-  }
+  .btn-hero-secondary { padding: 10px 24px; font-size: .92rem; }
 
+  .hero-info-inner { flex-direction: column; align-items: flex-start; gap: 6px; padding: 0 20px; }
+  .hero-info-divider { display: none; }
+  .hero-info-item { font-size: .82rem; line-height: 1.5; }
+
+  .container { padding: 0 18px; }
+  .section { padding: 48px 0; }
+  .section-header { margin-bottom: 28px; }
+  .section-title { font-size: 1.45rem; line-height: 1.35; }
+  .about-grid,
+  .sessions-grid,
+  .course-layout,
+  .course-meta-grid,
   .form-row { grid-template-columns: 1fr; }
-  .course-layout { grid-template-columns: 1fr; }
-  .course-meta-grid { grid-template-columns: 1fr; }
+  .about-card,
+  .session-card,
+  .course-meta-item,
+  .privacy-box,
+  .success-box,
+  .contact-card { width: 100%; }
+  .sessions-tabs { overflow-x: auto; justify-content: flex-start; padding-bottom: 4px; }
+  .tab-btn { flex: 0 0 auto; }
   .float-btn { bottom: 16px; right: 16px; }
-  }
+}
+
+@media (max-width: 480px) {
+  .hero,
+  .hero-banner-only { height: 260px; min-height: 260px; }
+  .hero-content-minimal { padding-bottom: 16px; }
+  .hero-actions { width: 100%; }
+  .btn-hero,
+  .btn-hero-secondary { flex: 1 1 130px; padding: 9px 12px; font-size: .86rem; text-align: center; }
+  .section { padding: 40px 0; }
+  .notice-grid { grid-template-columns: 1fr; }
+  .form-control { font-size: 16px; }
+}
 /* ── 補充 JS render 用到的 class ── */
 .hero-info-bar { background: var(--primary); border-bottom: 3px solid var(--accent); padding: 12px 0; }
 .hero-info-inner { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: center; gap: 32px; flex-wrap: wrap; }
