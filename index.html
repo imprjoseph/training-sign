@@ -5,7 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>內政部國土署 個資說明會及教育訓練</title>
-  <link rel="stylesheet" href="style.css?v=14">
+  <link rel="stylesheet" href="style.css?v=18">
+  <script src="api.js"></script>
 </head>
 <body>
 
@@ -13,7 +14,7 @@
 <nav class="navbar" id="navbar">
   <div class="nav-inner">
     <div class="nav-brand">
-      <img id="logoImg" src="" alt="內政部國土署" class="nav-logo" onerror="this.style.display='none'">
+      <img id="logoImg" src="https://raw.githubusercontent.com/imprjoseph/training-sign/main/Land_Management.svg" alt="內政部國土署" class="nav-logo" onerror="this.style.display='none'">
       <span class="nav-title">內政部國土管理署</span>
     </div>
     <ul class="nav-links">
@@ -40,7 +41,7 @@
 
 <!-- ── Hero Section：純 Banner 版 ── -->
 <section class="hero hero-banner-only" id="hero">
-  <div class="hero-bg" id="heroBg" style="background-image:url('https://lh3.googleusercontent.com/d/1eHDTFSLQcDeFOz9x7i3iA3bv3Bqh6GgB');background-size:cover;background-position:center top;"></div>
+  <div class="hero-bg" id="heroBg" style="background-image:url('https://raw.githubusercontent.com/imprjoseph/training-sign/main/WEB_BANNER_1920x480_optimized.webp');background-size:cover;background-position:center top;"></div>
   <div class="hero-overlay"></div>
   <div class="hero-content hero-content-minimal">
     <div class="hero-actions">
@@ -370,7 +371,6 @@
   </div>
 </div>
 
-<script src="api.js"></script>
 <script>
 // ── 全域狀態 ──
 let allSessions = [];
@@ -388,6 +388,10 @@ window.onload = function() {
 // ── API 請求 ── (GitHub Pages)
 async function api(action, data) {
   data = data || {};
+  if (typeof API === 'undefined') {
+    console.error('api.js 未載入！請確認 GitHub repo 有 api.js 且內容正確');
+    throw new Error('API not loaded');
+  }
   return API.call(action, data);
 }
 
@@ -413,7 +417,7 @@ async function loadSettings() {
 
   // ── Banner 背景圖 ──
   // 優先使用 bannerDataUrl（Base64），其次 bannerUrl（Drive URL）
-  var bannerSrc = settings.bannerDataUrl || (settings.bannerUrl ? convertDriveUrl(settings.bannerUrl) : '') || 'https://lh3.googleusercontent.com/d/1eHDTFSLQcDeFOz9x7i3iA3bv3Bqh6GgB';
+  var bannerSrc = settings.bannerDataUrl || (settings.bannerUrl ? convertDriveUrl(settings.bannerUrl) : '') || 'https://raw.githubusercontent.com/imprjoseph/training-sign/main/WEB_BANNER_1920x480_optimized.webp';
   if (bannerSrc) {
     var heroBg = document.getElementById('heroBg');
     heroBg.style.backgroundImage = 'url("' + bannerSrc + '")';
