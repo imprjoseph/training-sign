@@ -93,8 +93,11 @@ body { background: #f0f4f8; padding-top: 0; overflow-x: hidden; }
 
 <script src="api.js"></script>
 <script>
-const REG_NO = '<?= registrationNo ?>';
-const TOKEN  = '<?= token ?>';
+// GitHub Pages 是靜態頁面，不會執行 GAS 的 <?= ?> 模板語法。
+// 因此 QR Code 掃描後，必須從網址參數讀取 registrationNo 與 token。
+const urlParams = new URLSearchParams(window.location.search);
+const REG_NO = (urlParams.get('registrationNo') || urlParams.get('regNo') || '').trim();
+const TOKEN  = (urlParams.get('token') || '').trim();
 let regData = null;
 
 async function api(action, data = {}) {
