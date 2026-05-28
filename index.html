@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>內政部國土署 個資說明會及教育訓練</title>
-  <link rel="stylesheet" href="style.css?v=20">
+  <link rel="stylesheet" href="style.css?v=23">
   <script>
   // ── API module (inline) ──
   window.API = (function() {
@@ -555,6 +555,21 @@ function filterSessions(region) {
   renderSessionCards(filtered);
 }
 
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function formatMultiline(value) {
+  return escapeHtml(value)
+    .replace(/\r\n|\r|\n/g, '<br>');
+}
+
 function renderSessionCards(sessions) {
   const grid = document.getElementById('sessionsGrid');
   if (!sessions.length) { grid.innerHTML = '<div class="empty-state">無場次資料</div>'; return; }
@@ -573,8 +588,7 @@ function renderSessionCards(sessions) {
         <div class="session-detail"><span></span> ${s.startTime || '—'} – ${s.endTime || '—'}</div>
         <div class="session-detail"><span></span> ${s.venue || '待公告'}</div>
         <div class="session-detail"><span></span> ${s.address || '—'}</div>
-        ${s.transportation ? `<div class="session-detail session-transport"><span></span><div>${String(s.transportation).replace(/?
-/g, '<br>')}</div></div>` : ''}
+        ${s.transportation ? `<div class="session-detail session-transport"><span></span><div>${formatMultiline(s.transportation)}</div></div>` : ''}
       </div>
       <div class="session-footer">
         <div class="quota-bar">
