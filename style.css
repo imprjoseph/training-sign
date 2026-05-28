@@ -104,11 +104,10 @@ body { color: var(--text); background: var(--white); line-height: 1.7; padding-t
   height: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 24px 34px;
+  padding: 0 24px 40px;
   display: flex;
   align-items: flex-end;
-  justify-content: center;
-  text-align: center;
+  justify-content: flex-start;
 }
 
 .hero-content-full {
@@ -238,7 +237,7 @@ body { color: var(--text); background: var(--white); line-height: 1.7; padding-t
 .float-text { font-size: .8rem; font-weight: 700; letter-spacing: .05em; }
 
 /* ── Container & Section ── */
-.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+.container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 .section { padding: 80px 0; }
 .section-gray { background: var(--gray-bg); }
 .section-blue { background: var(--primary); }
