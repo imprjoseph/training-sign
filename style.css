@@ -313,7 +313,7 @@ body { color: var(--text); background: var(--white); line-height: 1.7; padding-t
   transition: all .2s;
 }
 .tab-btn.active, .tab-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
-.sessions-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.sessions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
 .session-card {
   background: var(--white); border-radius: var(--radius-l); padding: 14px 16px;
   box-shadow: var(--shadow); border: 1px solid var(--border);
@@ -629,4 +629,21 @@ body { color: var(--text); background: var(--white); line-height: 1.7; padding-t
     text-align: center;
     padding: 10px 12px;
   }
+}
+
+/* ── 場次交通資訊換行顯示 ── */
+.session-transport {
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: #f8faff;
+  border-radius: 8px;
+  line-height: 1.55;
+}
+
+.session-transport span {
+  display: none;
+}
+
+.session-transport div {
+  white-space: normal;
 }

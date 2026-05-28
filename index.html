@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>內政部國土署 個資說明會及教育訓練</title>
-  <link rel="stylesheet" href="style.css?v=21">
+  <link rel="stylesheet" href="style.css?v=20">
   <script>
   // ── API module (inline) ──
   window.API = (function() {
@@ -573,7 +573,8 @@ function renderSessionCards(sessions) {
         <div class="session-detail"><span></span> ${s.startTime || '—'} – ${s.endTime || '—'}</div>
         <div class="session-detail"><span></span> ${s.venue || '待公告'}</div>
         <div class="session-detail"><span></span> ${s.address || '—'}</div>
-        ${s.transportation ? `<div class="session-detail"><span></span> ${s.transportation}</div>` : ''}
+        ${s.transportation ? `<div class="session-detail session-transport"><span></span><div>${String(s.transportation).replace(/?
+/g, '<br>')}</div></div>` : ''}
       </div>
       <div class="session-footer">
         <div class="quota-bar">
