@@ -388,10 +388,6 @@ window.onload = function() {
 // ── API 請求 ── (GitHub Pages)
 async function api(action, data) {
   data = data || {};
-  if (typeof API === 'undefined') {
-    console.error('api.js 未載入！請確認 GitHub repo 有 api.js 且內容正確');
-    throw new Error('API not loaded');
-  }
   return API.call(action, data);
 }
 

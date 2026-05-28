@@ -9,7 +9,7 @@
  *   API.setUrl('https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec');
  */
 
-const API = (function() {
+window.API = (function() {
 
   // ── 設定區 ─────────────────────────────────────────────────
   // ⚠️  請將下方 GAS_DEPLOYMENT_URL 改為你部署後的 Web App 網址
