@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>內政部國土署 個資說明會及教育訓練</title>
-  <link rel="stylesheet" href="style.css?v=11">
+  <link rel="stylesheet" href="style.css?v=13">
 </head>
 <body>
 
@@ -51,29 +51,19 @@
 </section>
 
 <!-- ── Hero 資訊列 ── -->
-<div class="hero-info-bar" id="heroInfoBar">
+<div class="hero-info-bar">
   <div class="hero-info-inner">
-    <div class="hero-info-item">
-      <span class="info-icon">🏛️</span>
-      <span>主辦單位：<strong id="infoOrganizer">內政部國土管理署</strong></span>
-    </div>
+    <div class="hero-info-item"><span>🏛️</span><span>主辦單位：<strong id="infoOrganizer">內政部國土管理署</strong></span></div>
     <div class="hero-info-divider"></div>
-    <div class="hero-info-item">
-      <span class="info-icon">📋</span>
-      <span><strong id="infoTitle">個資說明會及教育訓練</strong></span>
-    </div>
+    <div class="hero-info-item"><span>📋</span><strong id="infoTitle">個資說明會及教育訓練</strong></div>
     <div class="hero-info-divider"></div>
-    <div class="hero-info-item">
-      <span class="info-icon">📅</span>
-      <span>活動期間：<strong id="infoPeriod">2026年7月至2026年9月</strong></span>
-    </div>
+    <div class="hero-info-item"><span>📅</span><span>活動期間：<strong id="infoPeriod">2026年7月至2026年9月</strong></span></div>
   </div>
 </div>
-
 <!-- ── 浮動報名按鈕 ── -->
 <div class="float-btn" id="floatBtn">
   <a href="#register" class="float-btn-link" id="floatBtnLink">
-    <span class="float-icon"></span>
+    <span class="float-icon">📋</span>
     <span class="float-text">立即報名</span>
   </a>
 </div>
@@ -428,9 +418,12 @@ async function loadSettings() {
     var heroBg = document.getElementById('heroBg');
     heroBg.style.backgroundImage = 'url("' + bannerSrc + '")';
     heroBg.style.backgroundSize = 'cover';
-    heroBg.style.backgroundPosition = 'center top';
+    heroBg.style.backgroundPosition = 'center center';
     heroBg.style.backgroundRepeat = 'no-repeat';
     console.log('✅ Banner 已套用');
+  var _o = document.getElementById('infoOrganizer'); if (_o && settings.activityOrganizer) _o.textContent = settings.activityOrganizer;
+  var _t = document.getElementById('infoTitle');     if (_t && settings.activityTitle)    _t.textContent = settings.activityTitle;
+  var _p = document.getElementById('infoPeriod');    if (_p && settings.activityPeriod)   _p.textContent = settings.activityPeriod;
   } else {
     console.warn('⚠️ Settings 裡沒有 bannerUrl 或 bannerDataUrl');
   }
