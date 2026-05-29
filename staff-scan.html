@@ -5,33 +5,43 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>工作人員掃描作業 — 內政部國土署</title>
 <link rel="stylesheet" href="style.css?v=24">
+
+<!--
+  相機掃描說明：
+  1. 優先使用 html5-qrcode，支援多數 Android Chrome / iPhone Safari。
+  2. 若手機仍無法開啟相機，可直接用下方「序號手動輸入」完成報到／中餐／伴手禮。
+-->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
 <style>
-body { background:#f0f4f8; padding-top:0; color:#1e293b; }
+body { background:#f0f4f8; padding-top:0; color:#1e293b; font-family:'Noto Sans TC', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
 .staff-wrap { min-height:100vh; padding:24px 16px; display:flex; justify-content:center; }
-.staff-card { width:100%; max-width:760px; background:#fff; border-radius:20px; box-shadow:0 8px 40px rgba(0,0,0,.12); padding:28px; }
+.staff-card { width:100%; max-width:800px; background:#fff; border-radius:20px; box-shadow:0 8px 40px rgba(0,0,0,.12); padding:28px; }
 .header { text-align:center; margin-bottom:22px; }
 .header .icon { font-size:2.6rem; }
 .title { font-size:1.35rem; font-weight:900; color:#1a3a6b; margin-top:6px; }
 .sub { color:#64748b; font-size:.9rem; }
 .panel { border:1px solid #e2e8f0; border-radius:14px; padding:18px; margin:16px 0; background:#f8faff; }
-.panel-title { font-weight:800; color:#1a3a6b; margin-bottom:12px; }
+.panel-title { font-weight:800; color:#1a3a6b; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
 .form-row { display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center; }
+.form-row-3 { display:grid; grid-template-columns:1fr auto auto; gap:10px; align-items:center; }
 .input { width:100%; padding:12px 14px; border:1.5px solid #e2e8f0; border-radius:10px; font-size:1rem; box-sizing:border-box; }
-.btn { border:0; border-radius:10px; padding:12px 18px; font-weight:800; cursor:pointer; font-size:.96rem; }
+.btn { border:0; border-radius:10px; padding:12px 18px; font-weight:800; cursor:pointer; font-size:.96rem; min-height:46px; }
 .btn-primary { background:#1a3a6b; color:white; }
 .btn-blue { background:#2563eb; color:white; }
 .btn-green { background:#16a34a; color:white; }
 .btn-orange { background:#d97706; color:white; }
 .btn-purple { background:#7c3aed; color:white; }
+.btn-red { background:#dc2626; color:white; }
 .btn-outline { background:#fff; color:#2563eb; border:1.5px solid #2563eb; }
-.btn:disabled { background:#94a3b8; cursor:not-allowed; }
-.video-wrap { display:none; margin-top:12px; }
+.btn:disabled { background:#94a3b8; cursor:not-allowed; border-color:#94a3b8; color:#fff; }
+.scanner-box { display:none; margin-top:12px; }
+#reader { width:100%; max-width:520px; margin:0 auto; border-radius:14px; overflow:hidden; background:#111; }
 .scan-status { display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:10px; font-size:.86rem; color:#64748b; }
 .scan-status strong { color:#1a3a6b; }
 .scan-live { display:inline-flex; align-items:center; gap:6px; font-weight:800; color:#16a34a; }
 .scan-live::before { content:''; width:8px; height:8px; border-radius:50%; background:#16a34a; display:inline-block; }
 .scan-paused { color:#d97706; font-weight:800; }
-video { width:100%; max-height:320px; border-radius:14px; background:#111; object-fit:cover; }
 .scan-actions { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:14px; }
 .info-grid { background:#fff; border-radius:12px; border:1px solid #e2e8f0; padding:16px; }
 .info-row { display:flex; gap:12px; padding:8px 0; border-bottom:1px solid #e2e8f0; }
@@ -48,10 +58,14 @@ video { width:100%; max-height:320px; border-radius:14px; background:#111; objec
 .msg-error { background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; }
 .msg-warn { background:#fef3c7; color:#b45309; border:1px solid #fcd34d; }
 .help { font-size:.86rem; color:#64748b; line-height:1.6; margin-top:8px; }
+.quick-actions { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-top:10px; }
+.mode-tabs { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+.small { font-size:.82rem; color:#64748b; }
 @media (max-width:640px){
-  .staff-card { padding:20px 16px; }
-  .form-row { grid-template-columns:1fr; }
-  .scan-actions, .badges { grid-template-columns:1fr; }
+  .staff-wrap { padding:12px 10px; }
+  .staff-card { padding:20px 14px; border-radius:16px; }
+  .form-row, .form-row-3 { grid-template-columns:1fr; }
+  .scan-actions, .badges, .quick-actions, .mode-tabs { grid-template-columns:1fr; }
   .info-row { display:block; }
   .info-label { display:block; width:auto; margin-bottom:2px; }
 }
@@ -62,8 +76,8 @@ video { width:100%; max-height:320px; border-radius:14px; background:#111; objec
   <div class="staff-card">
     <div class="header">
       <div class="icon">📱</div>
-      <div class="title">工作人員掃描作業</div>
-      <div class="sub">報到／中餐／伴手禮皆須由工作人員掃描 QR Code 後執行</div>
+      <div class="title">工作人員現場作業</div>
+      <div class="sub">報到／中餐／伴手禮皆由工作人員操作，可掃 QR Code 或手動輸入序號</div>
     </div>
 
     <div id="loginPanel" class="panel">
@@ -77,28 +91,38 @@ video { width:100%; max-height:320px; border-radius:14px; background:#111; objec
 
     <div id="scanPanel" style="display:none;">
       <div class="panel">
-        <div class="panel-title">掃描 QR Code</div>
-        <div class="form-row">
-          <button class="btn btn-blue" onclick="startCameraScan()">開啟連續掃描</button>
-          <button class="btn btn-outline" onclick="stopCameraScan()">停止相機</button>
+        <div class="panel-title">
+          <span>作業模式</span>
+          <span class="small">建議手機用 Chrome / Safari 開啟</span>
         </div>
-        <div class="video-wrap" id="videoWrap">
-          <video id="video" playsinline></video>
+        <div class="mode-tabs">
+          <button class="btn btn-blue" onclick="startCameraScan()">開啟相機連續掃描</button>
+          <button class="btn btn-outline" onclick="focusManualInput()">無法開相機，改用序號輸入</button>
+        </div>
+
+        <div class="scanner-box" id="scannerBox">
+          <div id="reader"></div>
           <div class="scan-status">
             <span id="scanState">尚未開始掃描</span>
             <span>本次已掃描：<strong id="scanCount">0</strong> 筆</span>
           </div>
+          <button class="btn btn-red" style="width:100%;margin-top:10px;" onclick="stopCameraScan()">停止相機</button>
         </div>
-        <div class="help">連續掃描模式下，相機不會在掃到一筆後關閉；系統會自動忽略短時間內重複掃到的同一張 QR Code。若瀏覽器不支援相機掃描，可用手機或掃描器讀取 QR Code 後，將完整網址貼到下方欄位。</div>
+
+        <div class="help">
+          若手機無法開啟相機，常見原因是 LINE 內建瀏覽器、未允許相機權限、或瀏覽器不支援。請改用 Safari / Chrome 開啟；仍不行時，直接使用下方「序號手動輸入」。
+        </div>
       </div>
 
-      <div class="panel">
-        <div class="panel-title">手動貼上 QR Code 內容或輸入序號</div>
+      <div class="panel" id="manualPanel">
+        <div class="panel-title">序號手動輸入 / QR Code 內容貼上</div>
         <div class="form-row">
-          <input class="input" id="qrInput" placeholder="貼上 QR Code 網址，或輸入報到序號">
+          <input class="input" id="qrInput" placeholder="輸入報到序號，例如 N-AM-001；或貼上 QR Code 網址" onkeydown="if(event.key==='Enter')loadByInput()">
           <button class="btn btn-primary" onclick="loadByInput()">查詢</button>
         </div>
-        <div class="help">建議貼上完整 QR Code 網址，系統會同時驗證 registrationNo 與 token。</div>
+        <div class="help">
+          現場可直接輸入報到序號查詢，再按「完成報到／領取中餐／領取伴手禮」。若貼上完整 QR Code 網址，系統會一併驗證 token。
+        </div>
       </div>
 
       <div id="resultPanel" style="display:none;">
@@ -106,11 +130,19 @@ video { width:100%; max-height:320px; border-radius:14px; background:#111; objec
           <div class="panel-title">報名資料</div>
           <div class="info-grid" id="infoGrid"></div>
           <div class="badges" id="statusBadges"></div>
+
           <div class="scan-actions">
             <button class="btn btn-green" onclick="doStaffAction('checkin')">完成報到</button>
             <button class="btn btn-orange" onclick="doStaffAction('lunch')">領取中餐</button>
             <button class="btn btn-purple" onclick="doStaffAction('gift')">領取伴手禮</button>
           </div>
+
+          <div class="quick-actions">
+            <button class="btn btn-outline" onclick="clearCurrent()">清除本筆，掃下一位</button>
+            <button class="btn btn-outline" onclick="focusManualInput()">輸入下一筆序號</button>
+            <button class="btn btn-outline" onclick="startCameraScan()">回到掃描</button>
+          </div>
+
           <div id="actionMsg"></div>
         </div>
       </div>
@@ -133,14 +165,12 @@ window.API = (function() {
 let adminToken = localStorage.getItem('staff_admin_token') || '';
 let currentQr = { registrationNo:'', qrToken:'' };
 let currentData = null;
-let stream = null;
+let html5QrCode = null;
 let scanning = false;
-let detector = null;
-let scanBusy = false;
 let scanCount = 0;
 let lastScanKey = '';
 let lastScanAt = 0;
-let pauseUntil = 0;
+let scanBusy = false;
 
 function escapeHtml(value) {
   return String(value || '')
@@ -152,7 +182,9 @@ function escapeHtml(value) {
 }
 
 function showMsg(elId, type, msg) {
-  document.getElementById(elId).innerHTML = '<div class="msg msg-' + type + '">' + escapeHtml(msg) + '</div>';
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.innerHTML = '<div class="msg msg-' + type + '">' + escapeHtml(msg) + '</div>';
 }
 
 function setScanState(html) {
@@ -168,29 +200,36 @@ function bumpScanCount() {
 
 async function login() {
   const pwd = document.getElementById('adminPwd').value;
-  const res = await API.call('adminLogin', { password: pwd });
-  if (!res.success) {
-    showMsg('loginMsg', 'error', res.error || '登入失敗');
-    return;
-  }
-  adminToken = res.token;
-  localStorage.setItem('staff_admin_token', adminToken);
-  document.getElementById('loginPanel').style.display = 'none';
-  document.getElementById('scanPanel').style.display = 'block';
-}
-
-if (adminToken) {
-  document.addEventListener('DOMContentLoaded', function() {
+  try {
+    const res = await API.call('adminLogin', { password: pwd });
+    if (!res.success) {
+      showMsg('loginMsg', 'error', res.error || '登入失敗');
+      return;
+    }
+    adminToken = res.token;
+    localStorage.setItem('staff_admin_token', adminToken);
     document.getElementById('loginPanel').style.display = 'none';
     document.getElementById('scanPanel').style.display = 'block';
-  });
+    setTimeout(focusManualInput, 100);
+  } catch (err) {
+    showMsg('loginMsg', 'error', '系統連線失敗，請確認網路或 GAS URL');
+  }
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+  if (adminToken) {
+    document.getElementById('loginPanel').style.display = 'none';
+    document.getElementById('scanPanel').style.display = 'block';
+  }
+});
 
 function parseQrText(text) {
   text = String(text || '').trim();
   if (!text) return null;
+
   let registrationNo = '';
   let qrToken = '';
+
   try {
     const url = new URL(text);
     registrationNo = (url.searchParams.get('registrationNo') || url.searchParams.get('regNo') || '').trim();
@@ -198,14 +237,25 @@ function parseQrText(text) {
   } catch(e) {
     registrationNo = text;
   }
+
   if (!registrationNo) return null;
   return { registrationNo, qrToken };
 }
 
+function focusManualInput() {
+  document.getElementById('manualPanel').scrollIntoView({ behavior:'smooth', block:'center' });
+  setTimeout(function() {
+    const input = document.getElementById('qrInput');
+    input.focus();
+    input.select();
+  }, 300);
+}
+
 async function loadByInput() {
-  const parsed = parseQrText(document.getElementById('qrInput').value);
+  const input = document.getElementById('qrInput');
+  const parsed = parseQrText(input.value);
   if (!parsed) {
-    showMsg('actionMsg', 'error', '請貼上 QR Code 網址或輸入報到序號');
+    showMsg('actionMsg', 'error', '請輸入報到序號，或貼上 QR Code 網址');
     return;
   }
   await loadRegistration(parsed.registrationNo, parsed.qrToken);
@@ -214,19 +264,28 @@ async function loadByInput() {
 async function loadRegistration(registrationNo, qrToken) {
   currentQr = { registrationNo, qrToken };
   document.getElementById('resultPanel').style.display = 'none';
-  const res = await API.call('staffGetScanInfo', {
-    token: adminToken,
-    registrationNo: registrationNo,
-    qrToken: qrToken
-  });
-  if (!res.success) {
-    showMsg('actionMsg', 'error', res.error || '查詢失敗');
-    return;
+
+  try {
+    const res = await API.call('staffGetScanInfo', {
+      token: adminToken,
+      registrationNo: registrationNo,
+      qrToken: qrToken || ''
+    });
+
+    if (!res.success) {
+      showMsg('actionMsg', 'error', res.error || '查詢失敗');
+      return;
+    }
+
+    currentData = res.data || {};
+    renderData(currentData);
+    document.getElementById('resultPanel').style.display = 'block';
+    document.getElementById('actionMsg').innerHTML = '';
+    document.getElementById('resultPanel').scrollIntoView({ behavior:'smooth', block:'start' });
+
+  } catch (err) {
+    showMsg('actionMsg', 'error', '查詢發生錯誤，請確認網路連線');
   }
-  currentData = res.data || {};
-  renderData(currentData);
-  document.getElementById('resultPanel').style.display = 'block';
-  document.getElementById('actionMsg').innerHTML = '';
 }
 
 function renderData(d) {
@@ -238,10 +297,12 @@ function renderData(d) {
     <div class="info-row"><span class="info-label">場次</span><span class="info-value">${escapeHtml(d.sessionName)}</span></div>
     <div class="info-row"><span class="info-label">報名狀態</span><span class="info-value">${escapeHtml(d.status)}</span></div>
   `;
+
   function box(label, value) {
     const ok = String(value || '').indexOf('已') === 0;
     return '<div class="badge-box ' + (ok ? 'badge-ok' : 'badge-wait') + '">' + label + '<br>' + escapeHtml(value || '未完成') + '</div>';
   }
+
   document.getElementById('statusBadges').innerHTML =
     box('報到', d.checkinStatus || '未報到') +
     box('中餐', d.lunchStatus || '未領取') +
@@ -250,107 +311,135 @@ function renderData(d) {
 
 async function doStaffAction(scanType) {
   if (!currentQr.registrationNo) {
-    showMsg('actionMsg', 'error', '請先掃描或查詢報名資料');
+    showMsg('actionMsg', 'error', '請先掃描 QR Code 或輸入序號查詢報名資料');
+    focusManualInput();
     return;
   }
-  const res = await API.call('staffScanAction', {
-    token: adminToken,
-    registrationNo: currentQr.registrationNo,
-    qrToken: currentQr.qrToken,
-    scanType: scanType,
-    operator: 'onsite_staff'
-  });
-  if (!res.success) {
-    showMsg('actionMsg', res.alreadyDone ? 'warn' : 'error', res.message || res.error || '操作失敗');
+
+  try {
+    const res = await API.call('staffScanAction', {
+      token: adminToken,
+      registrationNo: currentQr.registrationNo,
+      qrToken: currentQr.qrToken || '',
+      scanType: scanType,
+      operator: 'onsite_staff'
+    });
+
+    if (!res.success) {
+      showMsg('actionMsg', res.alreadyDone ? 'warn' : 'error', res.message || res.error || '操作失敗');
+      if (res.data) renderData(res.data);
+      return;
+    }
+
+    showMsg('actionMsg', 'success', res.message || '操作完成');
     if (res.data) renderData(res.data);
-    return;
+
+    // 操作完成後保留相機連續掃描；手動模式則清空輸入框方便下一位。
+    document.getElementById('qrInput').value = '';
+
+  } catch (err) {
+    showMsg('actionMsg', 'error', '操作發生錯誤，請確認網路連線');
   }
-  showMsg('actionMsg', 'success', res.message || '操作完成');
-  if (res.data) renderData(res.data);
 }
 
 async function startCameraScan() {
-  if (!('BarcodeDetector' in window)) {
-    showMsg('actionMsg', 'warn', '此瀏覽器不支援即時 QR 掃描，請改用下方欄位貼上 QR Code 網址。');
-    return;
-  }
+  document.getElementById('scannerBox').style.display = 'block';
+  setScanState('<span class="scan-paused">正在啟動相機...</span>');
+
   if (scanning) {
     setScanState('<span class="scan-live">連續掃描中</span>');
     return;
   }
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-    const video = document.getElementById('video');
-    video.srcObject = stream;
-    await video.play();
-    document.getElementById('videoWrap').style.display = 'block';
-    scanning = true;
-    detector = new BarcodeDetector({ formats: ['qr_code'] });
-    setScanState('<span class="scan-live">連續掃描中</span>');
-    scanLoop(video);
-  } catch (err) {
-    showMsg('actionMsg', 'error', '無法開啟相機，請確認瀏覽器權限，或改用手動貼上 QR Code 網址。');
-  }
-}
 
-async function scanLoop(video) {
-  if (!scanning) return;
-
-  const now = Date.now();
-  if (scanBusy || now < pauseUntil) {
-    requestAnimationFrame(() => scanLoop(video));
+  if (typeof Html5Qrcode === 'undefined') {
+    setScanState('<span class="scan-paused">無法載入掃描元件</span>');
+    showMsg('actionMsg', 'warn', '掃描元件載入失敗，請改用序號手動輸入。');
+    focusManualInput();
     return;
   }
 
   try {
-    const codes = await detector.detect(video);
-    if (codes && codes.length) {
-      const text = codes[0].rawValue || '';
-      const parsed = parseQrText(text);
-      if (parsed) {
-        const key = parsed.registrationNo + '|' + parsed.qrToken;
+    html5QrCode = new Html5Qrcode("reader");
 
-        // 避免同一張 QR Code 在鏡頭前停留時，被每一幀重複讀取。
-        if (key === lastScanKey && now - lastScanAt < 5000) {
-          requestAnimationFrame(() => scanLoop(video));
-          return;
-        }
+    const config = {
+      fps: 10,
+      qrbox: function(viewfinderWidth, viewfinderHeight) {
+        const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+        const size = Math.floor(minEdge * 0.72);
+        return { width: size, height: size };
+      },
+      rememberLastUsedCamera: true,
+      supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+    };
 
-        scanBusy = true;
-        lastScanKey = key;
-        lastScanAt = now;
-        pauseUntil = now + 1200;
-        document.getElementById('qrInput').value = text;
-        setScanState('<span class="scan-paused">已掃到 QR Code，讀取資料中...</span>');
+    await html5QrCode.start(
+      { facingMode: "environment" },
+      config,
+      onScanSuccess,
+      function() {}
+    );
 
-        try {
-          await loadRegistration(parsed.registrationNo, parsed.qrToken);
-          bumpScanCount();
-          if (navigator.vibrate) navigator.vibrate(120);
-          setScanState('<span class="scan-live">連續掃描中，請掃下一位</span>');
-        } catch (e) {
-          setScanState('<span class="scan-live">連續掃描中</span>');
-        } finally {
-          scanBusy = false;
-          pauseUntil = Date.now() + 1800;
-        }
-      }
-    }
-  } catch(e) {}
+    scanning = true;
+    setScanState('<span class="scan-live">連續掃描中，請掃描與會者 QR Code</span>');
 
-  requestAnimationFrame(() => scanLoop(video));
+  } catch (err) {
+    scanning = false;
+    setScanState('<span class="scan-paused">相機啟動失敗</span>');
+    showMsg('actionMsg', 'warn', '手機無法開啟相機。請確認相機權限，或改用下方序號手動輸入。');
+    focusManualInput();
+  }
 }
 
-function stopCameraScan() {
-  scanning = false;
-  scanBusy = false;
-  detector = null;
-  setScanState('已停止掃描');
-  if (stream) {
-    stream.getTracks().forEach(t => t.stop());
-    stream = null;
+async function onScanSuccess(decodedText) {
+  if (scanBusy) return;
+
+  const parsed = parseQrText(decodedText);
+  if (!parsed) return;
+
+  const key = parsed.registrationNo + '|' + parsed.qrToken;
+  const now = Date.now();
+
+  // 避免同一張 QR Code 停在鏡頭前時重複觸發
+  if (key === lastScanKey && now - lastScanAt < 5000) return;
+
+  scanBusy = true;
+  lastScanKey = key;
+  lastScanAt = now;
+
+  document.getElementById('qrInput').value = decodedText;
+  setScanState('<span class="scan-paused">已掃到 QR Code，讀取資料中...</span>');
+
+  try {
+    await loadRegistration(parsed.registrationNo, parsed.qrToken);
+    bumpScanCount();
+    if (navigator.vibrate) navigator.vibrate(120);
+    setScanState('<span class="scan-live">連續掃描中，請掃下一位</span>');
+  } finally {
+    setTimeout(function() { scanBusy = false; }, 1200);
   }
-  document.getElementById('videoWrap').style.display = 'none';
+}
+
+async function stopCameraScan() {
+  try {
+    if (html5QrCode && scanning) {
+      await html5QrCode.stop();
+      await html5QrCode.clear();
+    }
+  } catch (e) {}
+
+  scanning = false;
+  html5QrCode = null;
+  setScanState('已停止掃描');
+  document.getElementById('scannerBox').style.display = 'none';
+}
+
+function clearCurrent() {
+  currentQr = { registrationNo:'', qrToken:'' };
+  currentData = null;
+  document.getElementById('qrInput').value = '';
+  document.getElementById('resultPanel').style.display = 'none';
+  document.getElementById('actionMsg').innerHTML = '';
+  focusManualInput();
 }
 </script>
 </body>
