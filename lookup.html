@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>查詢 QR Code 與報到序號｜個資說明會及教育訓練</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Noto Sans TC", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f0f4f8;
+    color: #1e293b;
+    line-height: 1.7;
+  }
+  .page-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+  }
+  .lookup-card {
+    width: 100%;
+    max-width: 560px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 8px 36px rgba(0,0,0,.12);
+    overflow: hidden;
+  }
+  .lookup-header {
+    background: #1a3a6b;
+    color: #fff;
+    padding: 28px 28px 24px;
+    text-align: center;
+  }
+  .lookup-icon { font-size: 2.4rem; margin-bottom: 8px; }
+  .lookup-title { font-size: 1.35rem; font-weight: 800; margin: 0; }
+  .lookup-sub { font-size: .9rem; color: rgba(255,255,255,.82); margin-top: 6px; }
+  .lookup-body { padding: 28px; }
+  .hint-box {
+    background: #f8faff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: #64748b;
+    font-size: .9rem;
+    margin-bottom: 20px;
+  }
+  .form-group { margin-bottom: 16px; }
+  label { display: block; font-weight: 700; font-size: .9rem; margin-bottom: 6px; color: #1a3a6b; }
+  input {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+  }
+  .btn-main {
+    width: 100%;
+    border: none;
+    border-radius: 999px;
+    padding: 14px 20px;
+    background: #2563eb;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+  .btn-main:hover { background: #1a3a6b; }
+  .btn-main:disabled { opacity: .6; cursor: not-allowed; }
+  .msg {
+    display: none;
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: .92rem;
+  }
+  .msg.error { display: block; background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+  .msg.info { display: block; background: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd; }
+  .result { display: none; margin-top: 24px; }
+  .result.open { display: block; }
+  .result-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #1a3a6b;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .info-grid {
+    background: #f8faff;
+    border-radius: 14px;
+    padding: 16px;
+    border: 1px solid #e2e8f0;
+  }
+  .info-row {
+    display: flex;
+    gap: 12px;
+    padding: 7px 0;
+    border-bottom: 1px solid #e2e8f0;
+    align-items: flex-start;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-label {
+    width: 86px;
+    flex: 0 0 86px;
+    color: #64748b;
+    font-size: .84rem;
+    font-weight: 700;
+  }
+  .info-value {
+    flex: 1;
+    color: #1e293b;
+    font-weight: 650;
+    word-break: break-word;
+  }
+  .qr-box {
+    text-align: center;
+    margin-top: 22px;
+    padding: 20px;
+    border: 1px dashed #cbd5e1;
+    border-radius: 16px;
+    background: #fff;
+  }
+  .qr-box img {
+    width: 220px;
+    height: 220px;
+    max-width: 100%;
+    border: 4px solid #e2e8f0;
+    border-radius: 12px;
+  }
+  .reg-no {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 8px 16px;
+    background: #e8f0fe;
+    color: #1a3a6b;
+    border-radius: 999px;
+    font-weight: 900;
+    letter-spacing: .04em;
+  }
+  .notice {
+    margin-top: 18px;
+    background: #fffbeb;
+    color: #92400e;
+    border: 1px solid #f59e0b;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: .88rem;
+  }
+  .back-link {
+    display: block;
+    text-align: center;
+    margin-top: 18px;
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: .9rem;
+  }
+  @media (max-width: 520px) {
+    .lookup-body { padding: 22px; }
+    .info-row { display: block; }
+    .info-label { width: auto; display: block; margin-bottom: 2px; }
+  }
+</style>
+<script>
+window.API = (function() {
+  var GAS_URL = 'https://script.google.com/macros/s/AKfycbw4ev7HTgCFRxeQCDGy3LM25eN5OTwlu_xK20ZxX7wtwpwUEYA6jXoe26UuHpbMSaGGZw/exec';
+  async function call(action, data) {
+    data = data || {};
+    var payload = Object.assign({ action: action }, data);
+    var resp = await fetch(GAS_URL, {
+      method: 'POST',
+      redirect: 'follow',
+      body: JSON.stringify(payload)
+    });
+    return resp.json();
+  }
+  return { call: call };
+})();
+</script>
+</head>
+<body>
+<div class="page-wrap">
+  <main class="lookup-card">
+    <div class="lookup-header">
+      <div class="lookup-icon">🔎</div>
+      <h1 class="lookup-title">查詢 QR Code 與報到序號</h1>
+      <div class="lookup-sub">內政部國土署 個資說明會及教育訓練</div>
+    </div>
+    <div class="lookup-body">
+      <div class="hint-box">
+        請輸入報名時填寫的 Email 與聯絡電話。聯絡電話可輸入完整電話，或僅輸入手機／電話末三碼。
+      </div>
+
+      <div class="form-group">
+        <label for="email">報名 Email</label>
+        <input id="email" type="email" placeholder="example@email.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label for="phone">聯絡電話或末三碼</label>
+        <input id="phone" type="tel" placeholder="請輸入完整電話或末三碼" autocomplete="tel" onkeydown="if(event.key==='Enter')lookup()">
+      </div>
+      <button class="btn-main" id="lookupBtn" onclick="lookup()">查詢</button>
+      <div id="msg" class="msg"></div>
+
+      <section id="result" class="result">
+        <div class="result-title">報名資料查詢結果</div>
+        <div class="info-grid" id="infoGrid"></div>
+        <div class="qr-box">
+          <div style="font-weight:800;color:#1a3a6b;margin-bottom:10px;">您的報到 QR Code</div>
+          <img id="qrImg" src="" alt="報到 QR Code">
+          <div class="reg-no">報到序號：<span id="regNo"></span></div>
+        </div>
+        <div class="notice">
+          本 QR Code 僅供現場工作人員掃描確認身分；報到、中餐與伴手禮領取，皆須由工作人員掃描後操作，與會者無法自行完成。
+        </div>
+      </section>
+
+      <a class="back-link" href="index.html">返回活動首頁</a>
+    </div>
+  </main>
+</div>
+
+<script>
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function showMsg(text, type) {
+  var el = document.getElementById('msg');
+  el.textContent = text;
+  el.className = 'msg ' + (type || 'info');
+}
+
+function hideMsg() {
+  var el = document.getElementById('msg');
+  el.textContent = '';
+  el.className = 'msg';
+}
+
+function row(label, value) {
+  if (!value) value = '—';
+  return '<div class="info-row"><div class="info-label">' + label + '</div><div class="info-value">' + escapeHtml(value) + '</div></div>';
+}
+
+async function lookup() {
+  var email = document.getElementById('email').value.trim();
+  var phone = document.getElementById('phone').value.trim();
+  var btn = document.getElementById('lookupBtn');
+  var result = document.getElementById('result');
+
+  result.classList.remove('open');
+  hideMsg();
+
+  if (!email) { showMsg('請輸入報名 Email', 'error'); return; }
+  if (!phone) { showMsg('請輸入聯絡電話或末三碼', 'error'); return; }
+
+  btn.disabled = true;
+  btn.textContent = '查詢中...';
+
+  try {
+    var res = await API.call('lookupRegistration', { email: email, phone: phone });
+    if (!res || !res.success) {
+      showMsg((res && res.error) || '查詢失敗，請稍後再試', 'error');
+      return;
+    }
+
+    var d = res.data || {};
+    var timeText = [d.date, d.startTime && d.endTime ? (d.startTime + ' – ' + d.endTime) : ''].filter(Boolean).join('　');
+    var placeText = [d.venue, d.address].filter(Boolean).join('｜');
+    var sessionText = [d.region, d.timeSlot, d.sessionName].filter(Boolean).join(' ');
+
+    document.getElementById('infoGrid').innerHTML =
+      row('姓名', d.name) +
+      row('服務單位', d.organization) +
+      row('報名狀態', d.status) +
+      row('報名場次', sessionText) +
+      row('日期時間', timeText) +
+      row('地點', placeText) +
+      row('報到狀態', d.checkinStatus) +
+      row('中餐領取', d.lunchStatus) +
+      row('伴手禮', d.giftStatus);
+
+    document.getElementById('qrImg').src = d.qrCodeImageUrl;
+    document.getElementById('regNo').textContent = d.registrationNo || '';
+    result.classList.add('open');
+  } catch (err) {
+    showMsg('系統連線失敗，請稍後再試', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '查詢';
+  }
+}
+</script>
+</body>
+</html>
