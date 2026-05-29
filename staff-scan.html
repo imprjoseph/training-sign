@@ -26,6 +26,11 @@ body { background:#f0f4f8; padding-top:0; color:#1e293b; }
 .btn-outline { background:#fff; color:#2563eb; border:1.5px solid #2563eb; }
 .btn:disabled { background:#94a3b8; cursor:not-allowed; }
 .video-wrap { display:none; margin-top:12px; }
+.scan-status { display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:10px; font-size:.86rem; color:#64748b; }
+.scan-status strong { color:#1a3a6b; }
+.scan-live { display:inline-flex; align-items:center; gap:6px; font-weight:800; color:#16a34a; }
+.scan-live::before { content:''; width:8px; height:8px; border-radius:50%; background:#16a34a; display:inline-block; }
+.scan-paused { color:#d97706; font-weight:800; }
 video { width:100%; max-height:320px; border-radius:14px; background:#111; object-fit:cover; }
 .scan-actions { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:14px; }
 .info-grid { background:#fff; border-radius:12px; border:1px solid #e2e8f0; padding:16px; }
@@ -74,11 +79,17 @@ video { width:100%; max-height:320px; border-radius:14px; background:#111; objec
       <div class="panel">
         <div class="panel-title">掃描 QR Code</div>
         <div class="form-row">
-          <button class="btn btn-blue" onclick="startCameraScan()">開啟相機掃描</button>
+          <button class="btn btn-blue" onclick="startCameraScan()">開啟連續掃描</button>
           <button class="btn btn-outline" onclick="stopCameraScan()">停止相機</button>
         </div>
-        <div class="video-wrap" id="videoWrap"><video id="video" playsinline></video></div>
-        <div class="help">若瀏覽器不支援相機掃描，可用手機或掃描器讀取 QR Code 後，將完整網址貼到下方欄位。</div>
+        <div class="video-wrap" id="videoWrap">
+          <video id="video" playsinline></video>
+          <div class="scan-status">
+            <span id="scanState">尚未開始掃描</span>
+            <span>本次已掃描：<strong id="scanCount">0</strong> 筆</span>
+          </div>
+        </div>
+        <div class="help">連續掃描模式下，相機不會在掃到一筆後關閉；系統會自動忽略短時間內重複掃到的同一張 QR Code。若瀏覽器不支援相機掃描，可用手機或掃描器讀取 QR Code 後，將完整網址貼到下方欄位。</div>
       </div>
 
       <div class="panel">
@@ -124,6 +135,12 @@ let currentQr = { registrationNo:'', qrToken:'' };
 let currentData = null;
 let stream = null;
 let scanning = false;
+let detector = null;
+let scanBusy = false;
+let scanCount = 0;
+let lastScanKey = '';
+let lastScanAt = 0;
+let pauseUntil = 0;
 
 function escapeHtml(value) {
   return String(value || '')
@@ -136,6 +153,17 @@ function escapeHtml(value) {
 
 function showMsg(elId, type, msg) {
   document.getElementById(elId).innerHTML = '<div class="msg msg-' + type + '">' + escapeHtml(msg) + '</div>';
+}
+
+function setScanState(html) {
+  const el = document.getElementById('scanState');
+  if (el) el.innerHTML = html;
+}
+
+function bumpScanCount() {
+  scanCount += 1;
+  const el = document.getElementById('scanCount');
+  if (el) el.textContent = String(scanCount);
 }
 
 async function login() {
@@ -246,6 +274,10 @@ async function startCameraScan() {
     showMsg('actionMsg', 'warn', '此瀏覽器不支援即時 QR 掃描，請改用下方欄位貼上 QR Code 網址。');
     return;
   }
+  if (scanning) {
+    setScanState('<span class="scan-live">連續掃描中</span>');
+    return;
+  }
   try {
     stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
     const video = document.getElementById('video');
@@ -253,33 +285,67 @@ async function startCameraScan() {
     await video.play();
     document.getElementById('videoWrap').style.display = 'block';
     scanning = true;
-    const detector = new BarcodeDetector({ formats: ['qr_code'] });
-    scanLoop(detector, video);
+    detector = new BarcodeDetector({ formats: ['qr_code'] });
+    setScanState('<span class="scan-live">連續掃描中</span>');
+    scanLoop(video);
   } catch (err) {
     showMsg('actionMsg', 'error', '無法開啟相機，請確認瀏覽器權限，或改用手動貼上 QR Code 網址。');
   }
 }
 
-async function scanLoop(detector, video) {
+async function scanLoop(video) {
   if (!scanning) return;
+
+  const now = Date.now();
+  if (scanBusy || now < pauseUntil) {
+    requestAnimationFrame(() => scanLoop(video));
+    return;
+  }
+
   try {
     const codes = await detector.detect(video);
     if (codes && codes.length) {
       const text = codes[0].rawValue || '';
       const parsed = parseQrText(text);
       if (parsed) {
-        stopCameraScan();
+        const key = parsed.registrationNo + '|' + parsed.qrToken;
+
+        // 避免同一張 QR Code 在鏡頭前停留時，被每一幀重複讀取。
+        if (key === lastScanKey && now - lastScanAt < 5000) {
+          requestAnimationFrame(() => scanLoop(video));
+          return;
+        }
+
+        scanBusy = true;
+        lastScanKey = key;
+        lastScanAt = now;
+        pauseUntil = now + 1200;
         document.getElementById('qrInput').value = text;
-        await loadRegistration(parsed.registrationNo, parsed.qrToken);
-        return;
+        setScanState('<span class="scan-paused">已掃到 QR Code，讀取資料中...</span>');
+
+        try {
+          await loadRegistration(parsed.registrationNo, parsed.qrToken);
+          bumpScanCount();
+          if (navigator.vibrate) navigator.vibrate(120);
+          setScanState('<span class="scan-live">連續掃描中，請掃下一位</span>');
+        } catch (e) {
+          setScanState('<span class="scan-live">連續掃描中</span>');
+        } finally {
+          scanBusy = false;
+          pauseUntil = Date.now() + 1800;
+        }
       }
     }
   } catch(e) {}
-  requestAnimationFrame(() => scanLoop(detector, video));
+
+  requestAnimationFrame(() => scanLoop(video));
 }
 
 function stopCameraScan() {
   scanning = false;
+  scanBusy = false;
+  detector = null;
+  setScanState('已停止掃描');
   if (stream) {
     stream.getTracks().forEach(t => t.stop());
     stream = null;
