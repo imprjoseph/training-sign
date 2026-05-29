@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>工作人員掃描作業 — 內政部國土署</title>
+<link rel="stylesheet" href="style.css?v=24">
+<style>
+body { background:#f0f4f8; padding-top:0; color:#1e293b; }
+.staff-wrap { min-height:100vh; padding:24px 16px; display:flex; justify-content:center; }
+.staff-card { width:100%; max-width:760px; background:#fff; border-radius:20px; box-shadow:0 8px 40px rgba(0,0,0,.12); padding:28px; }
+.header { text-align:center; margin-bottom:22px; }
+.header .icon { font-size:2.6rem; }
+.title { font-size:1.35rem; font-weight:900; color:#1a3a6b; margin-top:6px; }
+.sub { color:#64748b; font-size:.9rem; }
+.panel { border:1px solid #e2e8f0; border-radius:14px; padding:18px; margin:16px 0; background:#f8faff; }
+.panel-title { font-weight:800; color:#1a3a6b; margin-bottom:12px; }
+.form-row { display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center; }
+.input { width:100%; padding:12px 14px; border:1.5px solid #e2e8f0; border-radius:10px; font-size:1rem; box-sizing:border-box; }
+.btn { border:0; border-radius:10px; padding:12px 18px; font-weight:800; cursor:pointer; font-size:.96rem; }
+.btn-primary { background:#1a3a6b; color:white; }
+.btn-blue { background:#2563eb; color:white; }
+.btn-green { background:#16a34a; color:white; }
+.btn-orange { background:#d97706; color:white; }
+.btn-purple { background:#7c3aed; color:white; }
+.btn-outline { background:#fff; color:#2563eb; border:1.5px solid #2563eb; }
+.btn:disabled { background:#94a3b8; cursor:not-allowed; }
+.video-wrap { display:none; margin-top:12px; }
+video { width:100%; max-height:320px; border-radius:14px; background:#111; object-fit:cover; }
+.scan-actions { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:14px; }
+.info-grid { background:#fff; border-radius:12px; border:1px solid #e2e8f0; padding:16px; }
+.info-row { display:flex; gap:12px; padding:8px 0; border-bottom:1px solid #e2e8f0; }
+.info-row:last-child { border-bottom:0; }
+.info-label { width:100px; color:#64748b; font-size:.84rem; font-weight:800; flex-shrink:0; }
+.info-value { font-weight:700; word-break:break-word; }
+.badges { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:14px; }
+.badge-box { border-radius:12px; padding:12px; text-align:center; background:#f1f5f9; font-weight:800; }
+.badge-ok { background:#dcfce7; color:#15803d; }
+.badge-wait { background:#fef3c7; color:#b45309; }
+.msg { padding:14px 16px; border-radius:12px; margin-top:12px; font-weight:800; line-height:1.55; }
+.msg-info { background:#dbeafe; color:#1d4ed8; border:1px solid #93c5fd; }
+.msg-success { background:#dcfce7; color:#15803d; border:1px solid #86efac; }
+.msg-error { background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; }
+.msg-warn { background:#fef3c7; color:#b45309; border:1px solid #fcd34d; }
+.help { font-size:.86rem; color:#64748b; line-height:1.6; margin-top:8px; }
+@media (max-width:640px){
+  .staff-card { padding:20px 16px; }
+  .form-row { grid-template-columns:1fr; }
+  .scan-actions, .badges { grid-template-columns:1fr; }
+  .info-row { display:block; }
+  .info-label { display:block; width:auto; margin-bottom:2px; }
+}
+</style>
+</head>
+<body>
+<div class="staff-wrap">
+  <div class="staff-card">
+    <div class="header">
+      <div class="icon">📱</div>
+      <div class="title">工作人員掃描作業</div>
+      <div class="sub">報到／中餐／伴手禮皆須由工作人員掃描 QR Code 後執行</div>
+    </div>
+
+    <div id="loginPanel" class="panel">
+      <div class="panel-title">工作人員登入</div>
+      <div class="form-row">
+        <input class="input" type="password" id="adminPwd" placeholder="請輸入後台管理密碼" onkeydown="if(event.key==='Enter')login()">
+        <button class="btn btn-primary" onclick="login()">登入</button>
+      </div>
+      <div id="loginMsg"></div>
+    </div>
+
+    <div id="scanPanel" style="display:none;">
+      <div class="panel">
+        <div class="panel-title">掃描 QR Code</div>
+        <div class="form-row">
+          <button class="btn btn-blue" onclick="startCameraScan()">開啟相機掃描</button>
+          <button class="btn btn-outline" onclick="stopCameraScan()">停止相機</button>
+        </div>
+        <div class="video-wrap" id="videoWrap"><video id="video" playsinline></video></div>
+        <div class="help">若瀏覽器不支援相機掃描，可用手機或掃描器讀取 QR Code 後，將完整網址貼到下方欄位。</div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">手動貼上 QR Code 內容或輸入序號</div>
+        <div class="form-row">
+          <input class="input" id="qrInput" placeholder="貼上 QR Code 網址，或輸入報到序號">
+          <button class="btn btn-primary" onclick="loadByInput()">查詢</button>
+        </div>
+        <div class="help">建議貼上完整 QR Code 網址，系統會同時驗證 registrationNo 與 token。</div>
+      </div>
+
+      <div id="resultPanel" style="display:none;">
+        <div class="panel">
+          <div class="panel-title">報名資料</div>
+          <div class="info-grid" id="infoGrid"></div>
+          <div class="badges" id="statusBadges"></div>
+          <div class="scan-actions">
+            <button class="btn btn-green" onclick="doStaffAction('checkin')">完成報到</button>
+            <button class="btn btn-orange" onclick="doStaffAction('lunch')">領取中餐</button>
+            <button class="btn btn-purple" onclick="doStaffAction('gift')">領取伴手禮</button>
+          </div>
+          <div id="actionMsg"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+window.API = (function() {
+  var GAS_URL = 'https://script.google.com/macros/s/AKfycbw4ev7HTgCFRxeQCDGy3LM25eN5OTwlu_xK20ZxX7wtwpwUEYA6jXoe26UuHpbMSaGGZw/exec';
+  async function call(action, data) {
+    data = data || {};
+    var payload = Object.assign({ action: action }, data);
+    var resp = await fetch(GAS_URL, { method:'POST', redirect:'follow', body: JSON.stringify(payload) });
+    return resp.json();
+  }
+  return { call: call };
+})();
+
+let adminToken = localStorage.getItem('staff_admin_token') || '';
+let currentQr = { registrationNo:'', qrToken:'' };
+let currentData = null;
+let stream = null;
+let scanning = false;
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function showMsg(elId, type, msg) {
+  document.getElementById(elId).innerHTML = '<div class="msg msg-' + type + '">' + escapeHtml(msg) + '</div>';
+}
+
+async function login() {
+  const pwd = document.getElementById('adminPwd').value;
+  const res = await API.call('adminLogin', { password: pwd });
+  if (!res.success) {
+    showMsg('loginMsg', 'error', res.error || '登入失敗');
+    return;
+  }
+  adminToken = res.token;
+  localStorage.setItem('staff_admin_token', adminToken);
+  document.getElementById('loginPanel').style.display = 'none';
+  document.getElementById('scanPanel').style.display = 'block';
+}
+
+if (adminToken) {
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('loginPanel').style.display = 'none';
+    document.getElementById('scanPanel').style.display = 'block';
+  });
+}
+
+function parseQrText(text) {
+  text = String(text || '').trim();
+  if (!text) return null;
+  let registrationNo = '';
+  let qrToken = '';
+  try {
+    const url = new URL(text);
+    registrationNo = (url.searchParams.get('registrationNo') || url.searchParams.get('regNo') || '').trim();
+    qrToken = (url.searchParams.get('token') || '').trim();
+  } catch(e) {
+    registrationNo = text;
+  }
+  if (!registrationNo) return null;
+  return { registrationNo, qrToken };
+}
+
+async function loadByInput() {
+  const parsed = parseQrText(document.getElementById('qrInput').value);
+  if (!parsed) {
+    showMsg('actionMsg', 'error', '請貼上 QR Code 網址或輸入報到序號');
+    return;
+  }
+  await loadRegistration(parsed.registrationNo, parsed.qrToken);
+}
+
+async function loadRegistration(registrationNo, qrToken) {
+  currentQr = { registrationNo, qrToken };
+  document.getElementById('resultPanel').style.display = 'none';
+  const res = await API.call('staffGetScanInfo', {
+    token: adminToken,
+    registrationNo: registrationNo,
+    qrToken: qrToken
+  });
+  if (!res.success) {
+    showMsg('actionMsg', 'error', res.error || '查詢失敗');
+    return;
+  }
+  currentData = res.data || {};
+  renderData(currentData);
+  document.getElementById('resultPanel').style.display = 'block';
+  document.getElementById('actionMsg').innerHTML = '';
+}
+
+function renderData(d) {
+  document.getElementById('infoGrid').innerHTML = `
+    <div class="info-row"><span class="info-label">報到序號</span><span class="info-value">${escapeHtml(d.registrationNo)}</span></div>
+    <div class="info-row"><span class="info-label">姓名</span><span class="info-value">${escapeHtml(d.name)}</span></div>
+    <div class="info-row"><span class="info-label">單位</span><span class="info-value">${escapeHtml(d.organization)}</span></div>
+    <div class="info-row"><span class="info-label">職稱</span><span class="info-value">${escapeHtml(d.title)}</span></div>
+    <div class="info-row"><span class="info-label">場次</span><span class="info-value">${escapeHtml(d.sessionName)}</span></div>
+    <div class="info-row"><span class="info-label">報名狀態</span><span class="info-value">${escapeHtml(d.status)}</span></div>
+  `;
+  function box(label, value) {
+    const ok = String(value || '').indexOf('已') === 0;
+    return '<div class="badge-box ' + (ok ? 'badge-ok' : 'badge-wait') + '">' + label + '<br>' + escapeHtml(value || '未完成') + '</div>';
+  }
+  document.getElementById('statusBadges').innerHTML =
+    box('報到', d.checkinStatus || '未報到') +
+    box('中餐', d.lunchStatus || '未領取') +
+    box('伴手禮', d.giftStatus || '未領取');
+}
+
+async function doStaffAction(scanType) {
+  if (!currentQr.registrationNo) {
+    showMsg('actionMsg', 'error', '請先掃描或查詢報名資料');
+    return;
+  }
+  const res = await API.call('staffScanAction', {
+    token: adminToken,
+    registrationNo: currentQr.registrationNo,
+    qrToken: currentQr.qrToken,
+    scanType: scanType,
+    operator: 'onsite_staff'
+  });
+  if (!res.success) {
+    showMsg('actionMsg', res.alreadyDone ? 'warn' : 'error', res.message || res.error || '操作失敗');
+    if (res.data) renderData(res.data);
+    return;
+  }
+  showMsg('actionMsg', 'success', res.message || '操作完成');
+  if (res.data) renderData(res.data);
+}
+
+async function startCameraScan() {
+  if (!('BarcodeDetector' in window)) {
+    showMsg('actionMsg', 'warn', '此瀏覽器不支援即時 QR 掃描，請改用下方欄位貼上 QR Code 網址。');
+    return;
+  }
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    const video = document.getElementById('video');
+    video.srcObject = stream;
+    await video.play();
+    document.getElementById('videoWrap').style.display = 'block';
+    scanning = true;
+    const detector = new BarcodeDetector({ formats: ['qr_code'] });
+    scanLoop(detector, video);
+  } catch (err) {
+    showMsg('actionMsg', 'error', '無法開啟相機，請確認瀏覽器權限，或改用手動貼上 QR Code 網址。');
+  }
+}
+
+async function scanLoop(detector, video) {
+  if (!scanning) return;
+  try {
+    const codes = await detector.detect(video);
+    if (codes && codes.length) {
+      const text = codes[0].rawValue || '';
+      const parsed = parseQrText(text);
+      if (parsed) {
+        stopCameraScan();
+        document.getElementById('qrInput').value = text;
+        await loadRegistration(parsed.registrationNo, parsed.qrToken);
+        return;
+      }
+    }
+  } catch(e) {}
+  requestAnimationFrame(() => scanLoop(detector, video));
+}
+
+function stopCameraScan() {
+  scanning = false;
+  if (stream) {
+    stream.getTracks().forEach(t => t.stop());
+    stream = null;
+  }
+  document.getElementById('videoWrap').style.display = 'none';
+}
+</script>
+</body>
+</html>
