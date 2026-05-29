@@ -14,7 +14,7 @@ window.API = (function() {
   // ── 設定區 ─────────────────────────────────────────────────
   // ⚠️  請將下方 GAS_DEPLOYMENT_URL 改為你部署後的 Web App 網址
   // 格式：https://script.google.com/macros/s/AKfycb.../exec
-  let GAS_URL = '';
+  let GAS_URL = 'https://script.google.com/macros/s/AKfycbw4ev7HTgCFRxeQCDGy3LM25eN5OTwlu_xK20ZxX7wtwpwUEYA6jXoe26UuHpbMSaGGZw/exec';
 
   // ── 初始化 ──────────────────────────────────────────────────
   function setUrl(url) {
