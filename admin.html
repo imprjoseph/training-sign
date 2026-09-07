@@ -155,7 +155,7 @@ body { background: #f0f4f8; margin: 0; padding-top: 0; overflow-x: hidden; }
         </div>
         <div class="card">
           <div class="filter-bar">
-            <input class="filter-input" id="filterKeyword" placeholder="搜尋姓名/單位/Email/序號" style="flex:1;min-width:180px;" onkeydown="if(event.key==='Enter')searchRegistrations()">
+            <input class="filter-input" id="filterKeyword" placeholder="搜尋姓名/單位/Email/報到序號" style="flex:1;min-width:180px;" onkeydown="if(event.key==='Enter')searchRegistrations()">
             <select class="filter-input" id="filterSession"><option value="">全部場次</option></select>
             <select class="filter-input" id="filterStatus">
               <option value="">全部狀態</option><option value="正取">正取</option><option value="候補">候補</option><option value="取消">取消</option>
@@ -164,7 +164,7 @@ body { background: #f0f4f8; margin: 0; padding-top: 0; overflow-x: hidden; }
           </div>
           <div class="table-wrap">
             <table class="admin-table">
-              <thead><tr><th>序號</th><th>姓名</th><th>單位</th><th>場次</th><th>狀態</th><th>報到</th><th>紀念品</th><th>問卷</th><th>操作</th></tr></thead>
+              <thead><tr><th>報到序號</th><th>姓名</th><th>單位</th><th>場次</th><th>狀態</th><th>報到</th><th>紀念品</th><th>問卷</th><th>操作</th></tr></thead>
               <tbody id="regTbody"><tr><td colspan="9" style="text-align:center;color:#94a3b8;padding:24px;">點選搜尋或「重新整理」載入資料</td></tr></tbody>
             </table>
           </div>
@@ -452,9 +452,38 @@ async function api(action, data = {}) {
   const publicActions = ['adminLogin'];
   const payload = publicActions.includes(action) ? data : { token: adminToken, ...data };
   return API.call(action, payload);
-} catch (error) {
+}
+
+async function login() {
+  const input = document.getElementById('loginPwd');
+  const btn = document.querySelector('.login-btn');
+  const errBox = document.getElementById('loginErr');
+  const password = input.value;
+
+  errBox.textContent = '';
+  if (!password) {
+    errBox.textContent = '請輸入管理密碼';
+    input.focus();
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '登入中...';
+
+  try {
+    const res = await api('adminLogin', { password: password });
+    if (!res || !res.success || !res.token) {
+      errBox.textContent = (res && res.error) || '密碼錯誤，請重新輸入';
+      return;
+    }
+
+    adminToken = res.token;
+    sessionStorage.setItem('admin_token', adminToken);
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('adminPage').style.display = 'block';
+    initAdmin();
+  } catch (error) {
     console.error(error);
-    errBox.style.color = '#dc2626';
     errBox.textContent = '系統呼叫失敗：' + error.message;
 
   } finally {
@@ -1345,6 +1374,4 @@ document.querySelectorAll('.modal-backdrop').forEach(function(el) {
 
 </body>
 </html>
-
-
 
