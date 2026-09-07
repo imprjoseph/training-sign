@@ -358,20 +358,16 @@
     </div>
     <div class="contact-card" id="contactCard">
       <div class="contact-item">
-        <span class="contact-label">承辦單位</span>
-        <span id="contactUnit">—</span>
-      </div>
-      <div class="contact-item">
         <span class="contact-label">聯絡人</span>
-        <span id="contactPerson">—</span>
+        <span id="contactPerson">林小姐</span>
       </div>
       <div class="contact-item">
         <span class="contact-label">聯絡電話</span>
-        <span id="contactPhone">—</span>
+        <span id="contactPhone">02-27635666#113</span>
       </div>
       <div class="contact-item">
         <span class="contact-label">電子信箱</span>
-        <span id="contactEmail">—</span>
+        <span id="contactEmail">TIffany@impr.com.tw</span>
       </div>
       <div class="contact-item">
         <span class="contact-label">服務時間</span>
@@ -482,10 +478,10 @@ async function loadSettings() {
   }
 
   // ── 聯絡資訊 ──
-  document.getElementById('contactUnit').textContent    = settings.contactUnit    || '—';
-  document.getElementById('contactPerson').textContent  = settings.contactPerson  || '—';
-  document.getElementById('contactPhone').textContent   = settings.contactPhone   || '—';
-  document.getElementById('contactEmail').textContent   = settings.contactEmail   || '—';
+  // 本期活動窗口固定如下，避免後端舊設定覆蓋新版聯絡資訊。
+  document.getElementById('contactPerson').textContent  = '林小姐';
+  document.getElementById('contactPhone').textContent   = '02-27635666#113';
+  document.getElementById('contactEmail').textContent   = 'TIffany@impr.com.tw';
   document.getElementById('serviceHours').textContent   = settings.serviceHours   || '週一至週五 09:00–17:00';
   document.getElementById('footerOrganizer').textContent = settings.activityOrganizer || '內政部國土管理署';
 }
