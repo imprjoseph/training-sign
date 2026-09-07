@@ -79,7 +79,7 @@
     <div class="hero-info-divider"></div>
     <div class="hero-info-item"><span>📋</span><strong id="infoTitle">個資說明會及教育訓練</strong></div>
     <div class="hero-info-divider"></div>
-    <div class="hero-info-item"><span>📅</span><span>活動期間：<strong id="infoPeriod">2026年9月</strong></span></div>
+    <div class="hero-info-item"><span>📅</span><span>活動期間：<strong id="infoPeriod">2026年10月至11月</strong></span></div>
     <div class="hero-info-spacer"></div>
     <div class="hero-actions hero-info-actions">
       <a href="#register" class="btn-hero">立即報名</a>
@@ -189,7 +189,7 @@
   <div class="container">
     <div class="section-header">
       <div class="section-tag">場次資訊</div>
-      <h2 class="section-title">9月執行・5天4區10場</h2>
+      <h2 class="section-title">10月至11月執行・5天4區10場</h2>
     </div>
     <div class="sessions-tabs">
       <button class="tab-btn active" onclick="filterSessions('all')">全部場次</button>
@@ -458,8 +458,8 @@ async function loadSettings() {
   var _t = document.getElementById('infoTitle');     if (_t && settings.activityTitle)    _t.textContent = settings.activityTitle;
   var _p = document.getElementById('infoPeriod');
   if (_p) {
-    // 本期固定於 2026 年 9 月執行，避免後端舊設定覆蓋新版活動期間。
-    _p.textContent = '2026年9月';
+    // 本期固定於 2026 年 10 月至 11 月執行，避免後端舊設定覆蓋新版活動期間。
+    _p.textContent = '2026年10月至11月';
   }
   } else {
     console.warn('⚠️ Settings 裡沒有 bannerUrl 或 bannerDataUrl');
@@ -836,4 +836,3 @@ function toggleMenu() {
 </script>
 </body>
 </html>
-
