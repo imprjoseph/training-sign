@@ -502,11 +502,25 @@ function initAdmin() {
   loadAllSessions();
 }
 
-if (adminToken) {
-  document.getElementById('loginPage').style.display = 'none';
-  document.getElementById('adminPage').style.display = 'block';
-  initAdmin();
+async function restoreAdminSession() {
+  if (!adminToken) return;
+
+  try {
+    const res = await api('getDashboard');
+    if (!res || !res.success) throw new Error('登入憑證已失效');
+
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('adminPage').style.display = 'block';
+    initAdmin();
+  } catch (error) {
+    adminToken = '';
+    sessionStorage.removeItem('admin_token');
+    document.getElementById('loginPage').style.display = 'flex';
+    document.getElementById('adminPage').style.display = 'none';
+  }
 }
+
+restoreAdminSession();
 
 function showPage(name, el) {
   document.querySelectorAll('[id^="page-"]').forEach(function(p) {
@@ -1374,4 +1388,3 @@ document.querySelectorAll('.modal-backdrop').forEach(function(el) {
 
 </body>
 </html>
-

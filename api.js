@@ -14,7 +14,7 @@ window.API = (function() {
   // ── 設定區 ─────────────────────────────────────────────────
   // ⚠️  請將下方 GAS_DEPLOYMENT_URL 改為你部署後的 Web App 網址
   // 格式：https://script.google.com/macros/s/AKfycb.../exec
-  let GAS_URL = 'https://script.google.com/macros/s/AKfycbw4ev7HTgCFRxeQCDGy3LM25eN5OTwlu_xK20ZxX7wtwpwUEYA6jXoe26UuHpbMSaGGZw/exec';
+  let GAS_URL = 'https://script.google.com/macros/s/AKfycbx2A47XxwnnzfSHt6X52Qs-6EMdJ0ucSrpr-gnP9Mv743a0JEgKg4pvzgtmlBfu9cB_/exec';
 
   // ── 初始化 ──────────────────────────────────────────────────
   function setUrl(url) {
@@ -113,4 +113,4 @@ window.API = (function() {
 
 // ── 全域設定（統一在這裡改 URL，所有頁面共用） ─────────────────────
 // ⚠️  將下方網址替換成你的 GAS Web App 部署網址
-API.setUrl('https://script.google.com/macros/s/AKfycbw4ev7HTgCFRxeQCDGy3LM25eN5OTwlu_xK20ZxX7wtwpwUEYA6jXoe26UuHpbMSaGGZw/exec');
+API.setUrl('https://script.google.com/macros/s/AKfycbx2A47XxwnnzfSHt6X52Qs-6EMdJ0ucSrpr-gnP9Mv743a0JEgKg4pvzgtmlBfu9cB_/exec');

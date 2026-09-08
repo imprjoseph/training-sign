@@ -97,7 +97,7 @@ button{border:0;border-radius:10px;padding:12px 14px;font-weight:900;cursor:poin
 
 <script>
 window.API=(function(){
-  var GAS_URL='https://script.google.com/macros/s/AKfycbw4ev7HTgCFRxeQCDGy3LM25eN5OTwlu_xK20ZxX7wtwpwUEYA6jXoe26UuHpbMSaGGZw/exec';
+  var GAS_URL='https://script.google.com/macros/s/AKfycbx2A47XxwnnzfSHt6X52Qs-6EMdJ0ucSrpr-gnP9Mv743a0JEgKg4pvzgtmlBfu9cB_/exec';
   async function call(action,data){
     data=data||{};
     var resp=await fetch(GAS_URL,{method:'POST',redirect:'follow',body:JSON.stringify(Object.assign({action:action},data))});
