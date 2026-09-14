@@ -257,6 +257,17 @@ function row(label, value) {
   return '<div class="info-row"><div class="info-label">' + label + '</div><div class="info-value">' + escapeHtml(value) + '</div></div>';
 }
 
+function formatDateWithWeekday(value) {
+  if (!value) return '';
+  var text = String(value).trim();
+  if (/\([日一二三四五六]\)/.test(text)) return text;
+  var match = text.match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/);
+  if (!match) return text;
+  var date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  var weekday = ['日', '一', '二', '三', '四', '五', '六'][date.getDay()];
+  return match[1] + '/' + String(match[2]).padStart(2, '0') + '/' + String(match[3]).padStart(2, '0') + '（' + weekday + '）';
+}
+
 async function lookup() {
   var email = document.getElementById('email').value.trim();
   var phone = document.getElementById('phone').value.trim();
@@ -280,7 +291,7 @@ async function lookup() {
     }
 
     var d = res.data || {};
-    var timeText = [d.date, d.startTime && d.endTime ? (d.startTime + ' – ' + d.endTime) : ''].filter(Boolean).join('　');
+    var timeText = [formatDateWithWeekday(d.date), d.startTime && d.endTime ? (d.startTime + ' – ' + d.endTime) : ''].filter(Boolean).join('　');
     var placeText = [d.venue, d.address].filter(Boolean).join('｜');
     var sessionText = [d.region, d.timeSlot, d.sessionName].filter(Boolean).join(' ');
 

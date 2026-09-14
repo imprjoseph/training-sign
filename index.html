@@ -291,8 +291,9 @@
               <option value="">── 請選擇 ──</option>
               <option value="營造業">營造業</option>
               <option value="不動產業">不動產業</option>
-              <option value="大廈管理業">大廈管理業</option>
+              <option value="公寓大廈管理維護公司">公寓大廈管理維護公司</option>
               <option value="建築師事務所">建築師事務所</option>
+              <option value="都市更新業務財團法人">都市更新業務財團法人</option>
               <option value="其他">其他</option>
             </select>
           </div>
@@ -561,9 +562,10 @@ function renderSessionSelect(sessions) {
     if (s.registrationOpen === false || s.registrationOpen === 'FALSE') return;
     const opt = document.createElement('option');
     opt.value = s.sessionId;
+    const displayDate = formatDateWithWeekday(s.date);
     const label = s.isFull
-      ? s.sessionName + '（' + s.date + '）【額滿—可候補】'
-      : s.sessionName + '（' + s.date + '）— 剩餘 ' + s.remaining + ' 名';
+      ? s.sessionName + '（' + displayDate + '）【額滿—可候補】'
+      : s.sessionName + '（' + displayDate + '）— 剩餘 ' + s.remaining + ' 名';
     opt.textContent = label;
     sel.appendChild(opt);
   });
@@ -602,6 +604,17 @@ function formatMultiline(value) {
     .replace(/\r\n|\r|\n/g, '<br>');
 }
 
+function formatDateWithWeekday(value) {
+  if (!value) return '待公告';
+  const text = String(value).trim();
+  if (/\([日一二三四五六]\)/.test(text)) return text;
+  const match = text.match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/);
+  if (!match) return text;
+  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  const weekday = ['日', '一', '二', '三', '四', '五', '六'][date.getDay()];
+  return match[1] + '/' + String(match[2]).padStart(2, '0') + '/' + String(match[3]).padStart(2, '0') + '（' + weekday + '）';
+}
+
 function renderSessionCards(sessions) {
   const grid = document.getElementById('sessionsGrid');
   if (!sessions.length) { grid.innerHTML = '<div class="empty-state">無場次資料</div>'; return; }
@@ -616,7 +629,7 @@ function renderSessionCards(sessions) {
       </div>
       <h3 class="session-name">${s.sessionName}</h3>
       <div class="session-details">
-        <div class="session-detail"><span></span> ${s.date || '待公告'}</div>
+        <div class="session-detail"><span></span> ${formatDateWithWeekday(s.date)}</div>
         <div class="session-detail"><span></span> ${s.startTime || '—'} – ${s.endTime || '—'}</div>
         <div class="session-detail"><span></span> ${s.venue || '待公告'}</div>
         <div class="session-detail"><span></span> ${s.address || '—'}</div>
@@ -779,7 +792,7 @@ async function submitForm() {
     document.getElementById('successInfo').innerHTML =
       '<div class="success-row"><strong>姓名</strong>'  + data.name    + '</div>' +
       '<div class="success-row"><strong>場次</strong>'  + d.sessionName + '</div>' +
-      '<div class="success-row"><strong>日期</strong>'  + d.date        + '</div>' +
+      '<div class="success-row"><strong>日期</strong>'  + formatDateWithWeekday(d.date) + '</div>' +
       '<div class="success-row"><strong>時間</strong>'  + d.startTime + ' – ' + d.endTime + '</div>' +
       '<div class="success-row"><strong>地點</strong>'  + d.venue       + '</div>' +
       '<div class="success-row"><strong>狀態</strong><span class="status-badge ' +
