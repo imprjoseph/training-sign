@@ -565,7 +565,7 @@ function renderSessionSelect(sessions) {
     const displayDate = formatDateWithWeekday(s.date);
     const label = s.isFull
       ? s.sessionName + '（' + displayDate + '）【額滿—可候補】'
-      : s.sessionName + '（' + displayDate + '）— 剩餘 ' + s.remaining + ' 名';
+      : s.sessionName + '（' + displayDate + '）';
     opt.textContent = label;
     sel.appendChild(opt);
   });
@@ -579,7 +579,7 @@ function updateSessionQuota() {
   if (!s) { el.innerHTML = ''; return; }
   el.innerHTML = s.isFull
     ? '<span class="quota-full">此場次已額滿，報名後將列為候補</span>'
-    : '<span class="quota-ok">✅ 剩餘名額：' + s.remaining + ' / ' + s.capacity + '</span>';
+    : '<span class="quota-ok">✅ 此場次目前開放報名</span>';
 }
 
 function filterSessions(region) {
@@ -636,10 +636,6 @@ function renderSessionCards(sessions) {
         ${s.transportation ? `<div class="session-detail session-transport"><span></span><div>${formatMultiline(s.transportation)}</div></div>` : ''}
       </div>
       <div class="session-footer">
-        <div class="quota-bar">
-          <div class="quota-fill" style="width:${Math.min(100, ((s.capacity - s.remaining) / s.capacity) * 100)}%"></div>
-        </div>
-        <div class="quota-text">${isFull ? '額滿' : '剩餘 ' + s.remaining} / ${s.capacity} 人</div>
         ${isOpen
           ? `<button class="btn-session ${isFull ? 'btn-waitlist' : ''}" onclick="jumpToRegister('${s.sessionId}')">${isFull ? '登記候補' : '我要報名'}</button>`
           : '<span class="badge-closed">報名截止</span>'
