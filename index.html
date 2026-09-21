@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>內政部國土署 個資說明會及教育訓練</title>
+  <title>內政部國土署 115年度個人資料保護意識宣導活動說明會</title>
   <link rel="stylesheet" href="style.css?v=24">
   <script>
   // ── API module (inline) ──
@@ -77,7 +77,7 @@
   <div class="hero-info-inner">
     <div class="hero-info-item"><span>🏛️</span><span>主辦單位：<strong id="infoOrganizer">內政部國土管理署</strong></span></div>
     <div class="hero-info-divider"></div>
-    <div class="hero-info-item"><span>📋</span><strong id="infoTitle">個資說明會及教育訓練</strong></div>
+    <div class="hero-info-item"><span>📋</span><strong id="infoTitle">115年度個人資料保護意識宣導活動說明會</strong></div>
     <div class="hero-info-divider"></div>
     <div class="hero-info-item"><span>📅</span><span>活動期間：<strong id="infoPeriod">2026年10月至11月</strong></span></div>
     <div class="hero-info-spacer"></div>
@@ -253,7 +253,7 @@
         <!-- 個資宣告 -->
         <div class="privacy-box" id="privacyBox">
           <h3 class="privacy-title">個人資料蒐集告知事項</h3>
-          <p class="privacy-text" id="privacyText">本活動因報名、通知、報到、課程統計及活動行政管理需要，將蒐集您的姓名、服務單位、職稱、Email、聯絡電話、產業類別及出席紀錄等資料。相關資料僅供本次「個資說明會及教育訓練」活動行政聯繫、報到管理、統計分析及主辦單位成果彙整使用，不作其他目的使用。您可依個人資料保護法規定，向主辦單位請求查詢、閱覽、補充、更正或刪除個人資料。完成報名即表示您已閱讀並同意本個資蒐集告知事項。</p>
+          <p class="privacy-text" id="privacyText">本活動因報名、通知、報到、課程統計及活動行政管理需要，將蒐集您的姓名、服務單位、職稱、Email、聯絡電話、產業類別及出席紀錄等資料。相關資料僅供本次「115年度個人資料保護意識宣導活動說明會」活動行政聯繫、報到管理、統計分析及主辦單位成果彙整使用，不作其他目的使用。您可依個人資料保護法規定，向主辦單位請求查詢、閱覽、補充、更正或刪除個人資料。完成報名即表示您已閱讀並同意本個資蒐集告知事項。</p>
           <label class="privacy-check">
             <input type="checkbox" id="privacyConsent" required>
             <span>我已閱讀並同意上述個資蒐集告知事項</span>
@@ -381,7 +381,7 @@
 <!-- ── 頁尾 ── -->
 <footer class="footer">
   <div class="container">
-    <p>© 2026 內政部國土署 · 個人資料說明會及教育訓練活動</p>
+    <p>© 2026 內政部國土署 · 115年度個人資料保護意識宣導活動說明會</p>
     <p>主辦單位：<span id="footerOrganizer">內政部國土署</span></p>
   </div>
 </footer>
@@ -452,7 +452,8 @@ async function loadSettings() {
     heroBg.style.backgroundRepeat = 'no-repeat';
     console.log('✅ Banner 已套用');
   var _o = document.getElementById('infoOrganizer'); if (_o && settings.activityOrganizer) _o.textContent = settings.activityOrganizer;
-  var _t = document.getElementById('infoTitle');     if (_t && settings.activityTitle)    _t.textContent = settings.activityTitle;
+  var _t = document.getElementById('infoTitle');
+  if (_t) _t.textContent = '115年度個人資料保護意識宣導活動說明會';
   var _p = document.getElementById('infoPeriod');
   if (_p) {
     // 本期固定於 2026 年 10 月至 11 月執行，避免後端舊設定覆蓋新版活動期間。
