@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>內政部國土署 115年度個人資料保護意識宣導活動說明會</title>
-  <link rel="stylesheet" href="style.css?v=25">
+  <link rel="stylesheet" href="style.css?v=26">
   <script>
   // ── API module (inline) ──
   window.API = (function() {
@@ -420,6 +420,12 @@ const SPEAKER_PROFILE_URLS = {
   '許斌': 'https://www.davinci.idv.tw/team/38'
 };
 
+const SPEAKER_PHOTOS = {
+  '孔德澔': 'speaker-kung.jpg',
+  '王品媛': 'speaker-wang.jpg',
+  '林舒涵': 'speaker-lin.jpg'
+};
+
 // ── 初始化 ──
 // 使用 DOMContentLoaded，不等待圖片載入完成，避免 Banner/Logo 外部圖片延遲時資料區一直停在「載入中」。
 document.addEventListener('DOMContentLoaded', function() {
@@ -682,8 +688,9 @@ async function loadSpeakers() {
     grid.innerHTML = speakers.map(s => {
       const name = String(s.speakerName || '').replace(/\s*律師\s*$/, '');
       const profileUrl = SPEAKER_PROFILE_URLS[name] || 'https://www.davinci.idv.tw/team';
-      const avatar = s.speakerPhotoUrl
-        ? `<img class="speaker-photo" src="${s.speakerPhotoUrl}" alt="${s.speakerName}" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'speaker-avatar',textContent:'${name.charAt(0)}'}))">`
+      const photoUrl = s.speakerPhotoUrl || SPEAKER_PHOTOS[name] || '';
+      const avatar = photoUrl
+        ? `<img class="speaker-photo" src="${photoUrl}" alt="${s.speakerName}" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'speaker-avatar',textContent:'${name.charAt(0)}'}))">`
         : `<span class="speaker-avatar" aria-hidden="true">${name.charAt(0)}</span>`;
       const schedule = (s.courseFocus || '').split('｜').filter(Boolean);
       return `
@@ -711,8 +718,9 @@ async function loadSpeakers() {
 
 function openSpeakerModal(s) {
   const name = String(s.speakerName || '').replace(/\s*律師\s*$/, '');
-  const modalAvatar = s.speakerPhotoUrl
-    ? `<img class="modal-photo" src="${s.speakerPhotoUrl}" alt="${s.speakerName}" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'modal-avatar',textContent:'${name.charAt(0)}'}))">`
+  const photoUrl = s.speakerPhotoUrl || SPEAKER_PHOTOS[name] || '';
+  const modalAvatar = photoUrl
+    ? `<img class="modal-photo" src="${photoUrl}" alt="${s.speakerName}" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'modal-avatar',textContent:'${name.charAt(0)}'}))">`
     : `<span class="modal-avatar" aria-hidden="true">${name.charAt(0)}</span>`;
   const content = `
     <div class="modal-speaker">
