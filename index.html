@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>內政部國土署 115年度個人資料保護意識宣導活動說明會</title>
-  <link rel="stylesheet" href="style.css?v=24">
+  <link rel="stylesheet" href="style.css?v=25">
   <script>
   // ── API module (inline) ──
   window.API = (function() {
@@ -176,7 +176,8 @@
   <div class="container">
     <div class="section-header">
       <div class="section-tag">講師介紹</div>
-      <h2 class="section-title">本次課程講師</h2>
+      <h2 class="section-title">達文西專業律師團隊</h2>
+      <p class="section-lead">由達文西個資暨高科技法律事務所律師，依各區場次進行個資保護法規與實務案例解析。</p>
     </div>
     <div class="speakers-grid" id="speakersGrid">
       <div class="loading-state">載入中...</div>
@@ -398,6 +399,26 @@
 // ── 全域狀態 ──
 let allSessions = [];
 let settings = {};
+
+const SESSION_LECTURERS = {
+  'N1-AM': '孔德澔 律師',
+  'N1-PM': '王品媛 律師',
+  'N2-AM': '林舒涵 律師',
+  'N2-PM': '許斌 律師',
+  'S-AM': '孔德澔 律師',
+  'S-PM': '孔德澔 律師',
+  'E-AM': '王品媛 律師',
+  'E-PM': '王品媛 律師',
+  'C-AM': '許斌 律師',
+  'C-PM': '許斌 律師'
+};
+
+const SPEAKER_PROFILE_URLS = {
+  '孔德澔': 'https://www.davinci.idv.tw/team/33',
+  '王品媛': 'https://www.davinci.idv.tw/team/35',
+  '林舒涵': 'https://www.davinci.idv.tw/team/37',
+  '許斌': 'https://www.davinci.idv.tw/team/38'
+};
 
 // ── 初始化 ──
 // 使用 DOMContentLoaded，不等待圖片載入完成，避免 Banner/Logo 外部圖片延遲時資料區一直停在「載入中」。
@@ -622,6 +643,7 @@ function renderSessionCards(sessions) {
   grid.innerHTML = sessions.map(s => {
     const isFull = s.isFull;
     const isOpen = s.registrationOpen !== false && s.registrationOpen !== 'FALSE';
+    const lecturer = SESSION_LECTURERS[s.sessionId] || '待公告';
     return `
     <div class="session-card ${isFull ? 'is-full' : ''}">
       <div class="session-card-header">
@@ -632,6 +654,7 @@ function renderSessionCards(sessions) {
       <div class="session-details">
         <div class="session-detail"><span></span> ${formatDateWithWeekday(s.date)}</div>
         <div class="session-detail"><span></span> ${s.startTime || '—'} – ${s.endTime || '—'}</div>
+        <div class="session-detail session-lecturer"><span></span><strong>講師｜${lecturer}</strong></div>
         <div class="session-detail"><span></span> ${s.venue || '待公告'}</div>
         <div class="session-detail"><span></span> ${s.address || '—'}</div>
         ${s.transportation ? `<div class="session-detail session-transport"><span></span><div>${formatMultiline(s.transportation)}</div></div>` : ''}
@@ -656,20 +679,30 @@ async function loadSpeakers() {
       grid.innerHTML = '<div class="empty-state">講師資料稍後公告</div>';
       return;
     }
-    grid.innerHTML = speakers.map(s => `
-    <div class="speaker-card">
-      <div class="speaker-photo-wrap">
-        <img class="speaker-photo" src="${s.speakerPhotoUrl || ''}" alt="${s.speakerName}" onerror="this.src='https://via.placeholder.com/120x120?text=講師'">
-      </div>
+    grid.innerHTML = speakers.map(s => {
+      const name = String(s.speakerName || '').replace(/\s*律師\s*$/, '');
+      const profileUrl = SPEAKER_PROFILE_URLS[name] || 'https://www.davinci.idv.tw/team';
+      const avatar = s.speakerPhotoUrl
+        ? `<img class="speaker-photo" src="${s.speakerPhotoUrl}" alt="${s.speakerName}" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'speaker-avatar',textContent:'${name.charAt(0)}'}))">`
+        : `<span class="speaker-avatar" aria-hidden="true">${name.charAt(0)}</span>`;
+      const schedule = (s.courseFocus || '').split('｜').filter(Boolean);
+      return `
+    <article class="speaker-card">
+      <div class="speaker-photo-wrap">${avatar}</div>
       <div class="speaker-info">
         <h3 class="speaker-name">${s.speakerName}</h3>
         <p class="speaker-org">${s.speakerOrganization}</p>
         <p class="speaker-title-badge">${s.speakerTitle}</p>
         <div class="speaker-tags">${(s.speakerTags||'').split(',').filter(Boolean).map(t=>`<span class="tag">${t.trim()}</span>`).join('')}</div>
         <p class="speaker-short-bio">${s.shortBio || ''}</p>
-        <button class="btn-speaker-detail" onclick="openSpeakerModal(${JSON.stringify(s).replace(/"/g,'&quot;')})">查看詳細履歷</button>
+        ${schedule.length ? `<div class="speaker-schedule"><span class="speaker-schedule-label">授課場次</span>${schedule.map(item=>`<span>${item.trim()}</span>`).join('')}</div>` : ''}
+        <div class="speaker-actions">
+          <button class="btn-speaker-detail" onclick="openSpeakerModal(${JSON.stringify(s).replace(/"/g,'&quot;')})">查看詳細履歷</button>
+          <a class="speaker-profile-link" href="${profileUrl}" target="_blank" rel="noopener noreferrer">達文西介紹 ↗</a>
+        </div>
       </div>
-    </div>`).join('');
+    </article>`;
+    }).join('');
   } catch (err) {
     document.getElementById('speakersGrid').innerHTML = '<div class="empty-state">講師資料載入失敗</div>';
     console.error('loadSpeakers error:', err);
@@ -677,19 +710,24 @@ async function loadSpeakers() {
 }
 
 function openSpeakerModal(s) {
+  const name = String(s.speakerName || '').replace(/\s*律師\s*$/, '');
+  const modalAvatar = s.speakerPhotoUrl
+    ? `<img class="modal-photo" src="${s.speakerPhotoUrl}" alt="${s.speakerName}" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'modal-avatar',textContent:'${name.charAt(0)}'}))">`
+    : `<span class="modal-avatar" aria-hidden="true">${name.charAt(0)}</span>`;
   const content = `
     <div class="modal-speaker">
       <div class="modal-speaker-header">
-        <img class="modal-photo" src="${s.speakerPhotoUrl||''}" alt="${s.speakerName}" onerror="this.src='https://via.placeholder.com/80x80?text=講師'">
+        ${modalAvatar}
         <div>
           <h2>${s.speakerName}</h2>
           <p>${s.speakerOrganization} · ${s.speakerTitle}</p>
         </div>
       </div>
+      ${s.fullBio    ? `<div class="modal-section"><p>${s.fullBio}</p></div>` : ''}
       ${s.education  ? `<div class="modal-section"><strong>學歷</strong><p>${s.education}</p></div>` : ''}
       ${s.expertise  ? `<div class="modal-section"><strong>專業領域</strong><p>${s.expertise}</p></div>` : ''}
       ${s.experience ? `<div class="modal-section"><strong>相關經歷</strong><p>${s.experience}</p></div>` : ''}
-      ${s.courseFocus? `<div class="modal-section"><strong>本次授課重點</strong><p>${s.courseFocus}</p></div>` : ''}
+      ${s.courseFocus? `<div class="modal-section modal-schedule"><strong>授課場次</strong><p>${s.courseFocus}</p></div>` : ''}
     </div>`;
   document.getElementById('speakerModalContent').innerHTML = content;
   document.getElementById('speakerModal').classList.add('open');
