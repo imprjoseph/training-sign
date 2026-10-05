@@ -293,6 +293,16 @@ body { background: #f0f4f8; margin: 0; padding-top: 0; overflow-x: hidden; }
             <span id="importResult" style="font-size:.875rem;color:#64748b;"></span>
           </div>
         </div>
+        <div class="card">
+          <div class="card-title">活動前 7 天提醒通知</div>
+          <p style="color:#64748b;font-size:.875rem;margin:0 0 12px;">系統每日 09:00 自動檢查，僅寄給正取且尚未寄送者；信件包含場次、報到序號與 QR Code。</p>
+          <div class="filter-bar">
+            <select class="filter-input" id="reminderSession" style="min-width:220px;"><option value="">全部場次</option></select>
+            <button class="admin-btn admin-btn-outline" onclick="loadReminderStatus()">🔄 查看待寄狀態</button>
+            <button class="admin-btn admin-btn-primary" id="sendReminderBtn" onclick="sendReminder7()">✉️ 立即寄送所選場次</button>
+          </div>
+          <div id="reminderStatus" style="margin-top:12px;color:#64748b;font-size:.875rem;">請先查看待寄狀態。</div>
+        </div>
       </div>
 
       <div id="page-export" style="display:none;">
@@ -542,7 +552,8 @@ function showPage(name, el) {
     dashboard: loadDashboard,
     speakers: loadSpeakers,
     content: loadContent,
-    sessions: loadSessions_admin
+    sessions: loadSessions_admin,
+    qr: loadReminderStatus
   };
 
   if (actions[name]) {
@@ -557,7 +568,7 @@ async function loadAllSessions() {
 
   allSessions = res.data;
 
-  ['filterSession', 'exportSession', 'qrSession'].forEach(function(id) {
+  ['filterSession', 'exportSession', 'qrSession', 'reminderSession'].forEach(function(id) {
     const sel = document.getElementById(id);
     if (!sel) return;
 
@@ -1307,6 +1318,54 @@ async function showQRProjection() {
   document.getElementById('qrUrlText').textContent = res.url;
   document.getElementById('qrOpenLink').href = res.url;
   document.getElementById('qrProjectModal').classList.add('open');
+}
+
+async function loadReminderStatus() {
+  const box = document.getElementById('reminderStatus');
+  if (!box) return;
+  const sessionId = document.getElementById('reminderSession').value;
+  box.innerHTML = '載入中...';
+  const res = await api('getReminder7Status', { sessionId: sessionId });
+  if (!res.success) {
+    box.innerHTML = '<span style="color:#dc2626;">載入失敗：' + (res.error || '') + '</span>';
+    return;
+  }
+  if (!res.data.length) {
+    box.textContent = '查無場次資料。';
+    return;
+  }
+  box.innerHTML = res.data.map(function(item) {
+    const dayText = item.daysUntil === null
+      ? '日期格式無法辨識'
+      : item.daysUntil >= 0 ? '距活動 ' + item.daysUntil + ' 天' : '活動已結束';
+    return '<div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #e2e8f0;flex-wrap:wrap;">' +
+      '<span><strong style="color:#1a3a6b;">' + item.sessionName + '</strong><br><small>' + item.date + '｜' + dayText + '</small></span>' +
+      '<span>待寄 <strong style="color:#dc2626;">' + item.pending + '</strong>｜已寄 <strong style="color:#16a34a;">' + item.sent + '</strong></span>' +
+      '</div>';
+  }).join('');
+}
+
+async function sendReminder7() {
+  const sessionId = document.getElementById('reminderSession').value;
+  if (!sessionId) {
+    alert('請先選擇一個場次，避免誤寄全部場次。');
+    return;
+  }
+  const session = allSessions.find(function(s) { return String(s.sessionId) === String(sessionId); });
+  if (!confirm('確定立即寄送「' + (session ? session.sessionName : sessionId) + '」尚未寄出的行前提醒？')) return;
+  const btn = document.getElementById('sendReminderBtn');
+  btn.disabled = true;
+  btn.textContent = '寄送中...';
+  try {
+    const res = await api('sendReminder7Days', { sessionId: sessionId, force: true });
+    alert(res.success ? '✅ ' + res.message : '❌ ' + (res.error || '寄送失敗'));
+    await loadReminderStatus();
+  } catch (error) {
+    alert('❌ 寄送失敗：' + error.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✉️ 立即寄送所選場次';
+  }
 }
 
 async function importSurvey() {
