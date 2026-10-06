@@ -1431,7 +1431,8 @@ async function sendReminderSelected() {
   btn.textContent = '寄送中...';
   try {
     const res = await api('sendReminderSelected', { sessionId: sessionId, registrationNos: registrationNos, subject: subject, body: body });
-    alert(res.success ? '✅ ' + res.message : '❌ ' + (res.error || '寄送失敗'));
+    const detail = res.errors && res.errors.length ? '\n\n詳細原因：\n' + res.errors.join('\n') : '';
+    alert((res.success ? '✅ ' + res.message : '❌ ' + (res.error || '寄送失敗')) + detail);
     await loadReminderRecipients();
   } catch (error) {
     alert('❌ 寄送失敗：' + error.message);
