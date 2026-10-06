@@ -295,7 +295,7 @@ body { background: #f0f4f8; margin: 0; padding-top: 0; overflow-x: hidden; }
         </div>
         <div class="card">
           <div class="card-title">活動前 7 天提醒通知</div>
-          <p style="color:#64748b;font-size:.875rem;margin:0 0 12px;">以活動秘書處名義寄出。請先選擇單一場次、修改主旨與內文，再逐一勾選收件人；未勾選者不會寄送。</p>
+          <p style="color:#64748b;font-size:.875rem;margin:0 0 12px;">以國土署個資宣導活動秘書處名義寄出。請先選擇單一場次、修改主旨與內文，再逐一勾選收件人；未勾選者不會寄送。</p>
           <div class="filter-bar">
             <select class="filter-input" id="reminderSession" style="min-width:220px;" onchange="loadReminderRecipients()"><option value="">請選擇場次</option></select>
             <button class="admin-btn admin-btn-outline" onclick="loadReminderRecipients()">🔄 載入可寄名單</button>
@@ -310,7 +310,7 @@ body { background: #f0f4f8; margin: 0; padding-top: 0; overflow-x: hidden; }
 
 提醒您已報名「115年度個人資料保護意識宣導活動說明會」，請依下列資訊準時出席，並於現場出示 QR Code 或報到序號辦理報到。
 
-如有任何問題，歡迎與活動秘書處聯絡。</textarea>
+如有任何問題，歡迎與國土署個資宣導活動秘書處聯絡。</textarea>
             </label>
             <small style="color:#64748b;">可使用：{{姓名}}、{{單位}}、{{場次}}、{{日期}}、{{時間}}、{{地點}}、{{地址}}、{{報到序號}}。個人場次資訊與 QR Code 會自動附在內文後方。</small>
           </div>
@@ -1425,7 +1425,7 @@ async function sendReminderSelected() {
     return;
   }
   const session = allSessions.find(function(s) { return String(s.sessionId) === String(sessionId); });
-  if (!confirm('人工寄信確認\n\n場次：' + (session ? session.sessionName : sessionId) + '\n收件人：' + registrationNos.length + ' 人\n寄件名義：活動秘書處\n\n確定寄出？信件送出後無法收回。')) return;
+  if (!confirm('人工寄信確認\n\n場次：' + (session ? session.sessionName : sessionId) + '\n收件人：' + registrationNos.length + ' 人\n寄件名義：國土署個資宣導活動秘書處\n\n確定寄出？信件送出後無法收回。')) return;
   const btn = document.getElementById('sendReminderBtn');
   btn.disabled = true;
   btn.textContent = '寄送中...';
