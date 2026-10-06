@@ -295,13 +295,31 @@ body { background: #f0f4f8; margin: 0; padding-top: 0; overflow-x: hidden; }
         </div>
         <div class="card">
           <div class="card-title">活動前 7 天提醒通知</div>
-          <p style="color:#64748b;font-size:.875rem;margin:0 0 12px;">系統每日 09:00 自動檢查，僅寄給正取且尚未寄送者；信件包含場次、報到序號與 QR Code。</p>
+          <p style="color:#64748b;font-size:.875rem;margin:0 0 12px;">以活動秘書處名義寄出。請先選擇單一場次、修改主旨與內文，再逐一勾選收件人；未勾選者不會寄送。</p>
           <div class="filter-bar">
-            <select class="filter-input" id="reminderSession" style="min-width:220px;"><option value="">全部場次</option></select>
-            <button class="admin-btn admin-btn-outline" onclick="loadReminderStatus()">🔄 查看待寄狀態</button>
-            <button class="admin-btn admin-btn-primary" id="sendReminderBtn" onclick="sendReminder7()">✉️ 立即寄送所選場次</button>
+            <select class="filter-input" id="reminderSession" style="min-width:220px;" onchange="loadReminderRecipients()"><option value="">請選擇場次</option></select>
+            <button class="admin-btn admin-btn-outline" onclick="loadReminderRecipients()">🔄 載入可寄名單</button>
           </div>
           <div id="reminderStatus" style="margin-top:12px;color:#64748b;font-size:.875rem;">請先查看待寄狀態。</div>
+          <div style="margin-top:16px;display:grid;gap:12px;">
+            <label style="font-weight:700;color:#334155;">信件主旨
+              <input class="filter-input" id="reminderSubject" style="width:100%;box-sizing:border-box;margin-top:6px;" value="【行前提醒】115年度個人資料保護意識宣導活動說明會｜{{場次}}">
+            </label>
+            <label style="font-weight:700;color:#334155;">信件說明內文
+              <textarea id="reminderBody" rows="7" style="width:100%;box-sizing:border-box;margin-top:6px;border:1px solid #cbd5e1;border-radius:8px;padding:10px;font:inherit;line-height:1.7;">{{姓名}} 您好：
+
+提醒您已報名「115年度個人資料保護意識宣導活動說明會」，請依下列資訊準時出席，並於現場出示 QR Code 或報到序號辦理報到。
+
+如有任何問題，歡迎與活動秘書處聯絡。</textarea>
+            </label>
+            <small style="color:#64748b;">可使用：{{姓名}}、{{單位}}、{{場次}}、{{日期}}、{{時間}}、{{地點}}、{{地址}}、{{報到序號}}。個人場次資訊與 QR Code 會自動附在內文後方。</small>
+          </div>
+          <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+            <strong style="color:#1a3a6b;">逐一確認收件人</strong>
+            <span id="reminderSelectedCount" style="color:#64748b;font-size:.875rem;">已勾選 0 人</span>
+          </div>
+          <div id="reminderRecipients" style="margin-top:8px;border:1px solid #e2e8f0;border-radius:10px;max-height:360px;overflow:auto;padding:0 12px;color:#64748b;font-size:.875rem;">請先選擇場次並載入名單。</div>
+          <button class="admin-btn admin-btn-primary" id="sendReminderBtn" onclick="sendReminderSelected()" style="margin-top:14px;" disabled>✉️ 寄送已勾選的 0 人</button>
         </div>
       </div>
 
@@ -454,6 +472,7 @@ body { background: #f0f4f8; margin: 0; padding-top: 0; overflow-x: hidden; }
 let adminToken = sessionStorage.getItem('admin_token') || '';
 let allSessions = [];
 let currentRegNo = '';
+let reminderRecipients = [];
 
 /**
  * 統一 API 呼叫
@@ -1345,26 +1364,79 @@ async function loadReminderStatus() {
   }).join('');
 }
 
-async function sendReminder7() {
+function reminderEsc(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch];
+  });
+}
+
+async function loadReminderRecipients() {
   const sessionId = document.getElementById('reminderSession').value;
+  const box = document.getElementById('reminderRecipients');
   if (!sessionId) {
-    alert('請先選擇一個場次，避免誤寄全部場次。');
+    reminderRecipients = [];
+    box.textContent = '請先選擇一個場次。';
+    updateReminderSelectedCount();
+    return;
+  }
+  box.textContent = '載入中...';
+  const res = await api('getReminderRecipients', { sessionId: sessionId });
+  if (!res.success) {
+    box.innerHTML = '<div style="padding:12px;color:#dc2626;">載入失敗：' + reminderEsc(res.error || '') + '</div>';
+    return;
+  }
+  reminderRecipients = res.data || [];
+  if (!reminderRecipients.length) {
+    box.innerHTML = '<div style="padding:12px;">本場次沒有可寄送的正取報名者。</div>';
+  } else {
+    box.innerHTML = reminderRecipients.map(function(r) {
+      const disabled = r.sent ? ' disabled' : '';
+      const state = r.sent ? '<span style="color:#16a34a;font-weight:700;">已寄送</span>' : '<span style="color:#dc2626;">待確認</span>';
+      return '<label style="display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid #e2e8f0;cursor:' + (r.sent ? 'default' : 'pointer') + ';">' +
+        '<input type="checkbox" class="reminder-recipient-check" value="' + reminderEsc(r.registrationNo) + '" onchange="updateReminderSelectedCount()"' + disabled + ' style="margin-top:4px;">' +
+        '<span style="flex:1;"><strong style="color:#1a3a6b;">' + reminderEsc(r.name) + '</strong>｜' + reminderEsc(r.registrationNo) +
+        '<br><small>' + reminderEsc(r.organization) + '｜' + reminderEsc(r.email) + '</small></span>' + state + '</label>';
+    }).join('');
+  }
+  await loadReminderStatus();
+  updateReminderSelectedCount();
+}
+
+function updateReminderSelectedCount() {
+  const checked = Array.from(document.querySelectorAll('.reminder-recipient-check:checked'));
+  const count = checked.length;
+  document.getElementById('reminderSelectedCount').textContent = '已勾選 ' + count + ' 人';
+  const btn = document.getElementById('sendReminderBtn');
+  btn.disabled = count === 0;
+  btn.textContent = '✉️ 寄送已勾選的 ' + count + ' 人';
+}
+
+async function sendReminderSelected() {
+  const sessionId = document.getElementById('reminderSession').value;
+  const registrationNos = Array.from(document.querySelectorAll('.reminder-recipient-check:checked')).map(function(el) { return el.value; });
+  const subject = document.getElementById('reminderSubject').value.trim();
+  const body = document.getElementById('reminderBody').value.trim();
+  if (!sessionId || !registrationNos.length) {
+    alert('請選擇場次並逐一勾選要寄送的報名者。');
+    return;
+  }
+  if (!subject || !body) {
+    alert('信件主旨與內文不可空白。');
     return;
   }
   const session = allSessions.find(function(s) { return String(s.sessionId) === String(sessionId); });
-  if (!confirm('確定立即寄送「' + (session ? session.sessionName : sessionId) + '」尚未寄出的行前提醒？')) return;
+  if (!confirm('人工寄信確認\n\n場次：' + (session ? session.sessionName : sessionId) + '\n收件人：' + registrationNos.length + ' 人\n寄件名義：活動秘書處\n\n確定寄出？信件送出後無法收回。')) return;
   const btn = document.getElementById('sendReminderBtn');
   btn.disabled = true;
   btn.textContent = '寄送中...';
   try {
-    const res = await api('sendReminder7Days', { sessionId: sessionId, force: true });
+    const res = await api('sendReminderSelected', { sessionId: sessionId, registrationNos: registrationNos, subject: subject, body: body });
     alert(res.success ? '✅ ' + res.message : '❌ ' + (res.error || '寄送失敗'));
-    await loadReminderStatus();
+    await loadReminderRecipients();
   } catch (error) {
     alert('❌ 寄送失敗：' + error.message);
   } finally {
-    btn.disabled = false;
-    btn.textContent = '✉️ 立即寄送所選場次';
+    updateReminderSelectedCount();
   }
 }
 
