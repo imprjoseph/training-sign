@@ -38,6 +38,7 @@ button{border:0;border-radius:10px;padding:12px 14px;font-weight:900;cursor:poin
 <div class="wrap"><div class="card">
 <h1>工作人員現場作業</h1>
 <div class="sub">請先選擇作業模式，連續掃描會先加入待寫入清單；全部掃完後再一次送出。</div>
+<div style="text-align:center;margin-top:8px"><a href="admin.html" style="color:#2563eb;font-weight:800;text-decoration:none">← 返回管理後台</a></div>
 
 <div id="loginPanel" class="panel">
   <div class="title">工作人員登入</div>
@@ -129,7 +130,7 @@ window.API=(function(){
   }
   return{call:call};
 })();
-let adminToken=localStorage.getItem('staff_admin_token')||'';
+let adminToken=sessionStorage.getItem('admin_token')||localStorage.getItem('staff_admin_token')||'';
 let currentMode='checkin',currentQr={registrationNo:'',qrToken:''},html5QrCode=null,scanning=false,scanBusy=false,lastScanKey='',lastScanAt=0;
 let pendingItems=readPendingItems(),searchResults=[];
 const modeText={checkin:'完成報到',lunch:'領取中餐',gift:'領取伴手禮'};
@@ -199,16 +200,22 @@ async function startCameraScan(){
   if(scanning){document.getElementById('scanState').textContent='連續掃描中：'+modeText[currentMode];return}
   if(typeof Html5Qrcode==='undefined'){msg('warn','掃描套件載入失敗，請改用序號輸入');return}
   try{
-    html5QrCode=new Html5Qrcode('reader');
-    await html5QrCode.start({facingMode:'environment'},{fps:10,qrbox:{width:250,height:250}},onScanSuccess,function(){});
+    let qrOnly=typeof Html5QrcodeSupportedFormats!=='undefined'?{formatsToSupport:[Html5QrcodeSupportedFormats.QR_CODE]}:undefined;
+    html5QrCode=new Html5Qrcode('reader',qrOnly,false);
+    await html5QrCode.start(
+      {facingMode:'environment'},
+      {fps:20,qrbox:function(w,h){let s=Math.floor(Math.min(w,h)*0.72);return{width:s,height:s}},aspectRatio:1.333334},
+      onScanSuccess,
+      function(){}
+    );
     scanning=true;document.getElementById('scanState').textContent='連續掃描中：'+modeText[currentMode];
   }catch(e){msg('warn','相機啟動失敗，請改用序號手動輸入');focusManualInput()}
 }
 async function onScanSuccess(decodedText){
   if(scanBusy)return;let p=parseQrText(decodedText);if(!p)return;
-  let key=p.registrationNo+'|'+p.qrToken+'|'+currentMode,now=Date.now();if(key===lastScanKey&&now-lastScanAt<3000)return;
+  let key=p.registrationNo+'|'+p.qrToken+'|'+currentMode,now=Date.now();if(key===lastScanKey&&now-lastScanAt<1500)return;
   scanBusy=true;lastScanKey=key;lastScanAt=now;document.getElementById('qrInput').value=decodedText;document.getElementById('scanState').textContent='已加入清單：'+p.registrationNo;
-  queueItem(p.registrationNo,p.qrToken,'QR Code 掃描');setTimeout(()=>{scanBusy=false;document.getElementById('scanState').textContent='連續掃描中：'+modeText[currentMode]},350)
+  queueItem(p.registrationNo,p.qrToken,'QR Code 掃描');setTimeout(()=>{scanBusy=false;document.getElementById('scanState').textContent='連續掃描中：'+modeText[currentMode]},150)
 }
 async function stopCameraScan(){try{if(html5QrCode&&scanning){await html5QrCode.stop();await html5QrCode.clear()}}catch(e){}scanning=false;html5QrCode=null;document.getElementById('scannerBox').style.display='none';}
 </script>

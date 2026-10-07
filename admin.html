@@ -13,7 +13,7 @@ body { background: #f0f4f8; margin: 0; padding-top: 0; overflow-x: hidden; }
 .sidebar-title { font-weight: 800; font-size: 1rem; }
 .sidebar-sub { font-size: .75rem; color: rgba(255,255,255,.6); margin-top: 2px; }
 .sidebar-nav { padding: 12px 0; flex: 1; }
-.nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; cursor: pointer; font-size: .9rem; color: rgba(255,255,255,.75); transition: all .15s; border: none; background: none; width: 100%; text-align: left; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; cursor: pointer; font-size: .9rem; color: rgba(255,255,255,.75); transition: all .15s; border: none; background: none; width: 100%; text-align: left; text-decoration: none; box-sizing: border-box; }
 .nav-item:hover, .nav-item.active { background: rgba(255,255,255,.12); color: #fff; }
 .nav-item .icon { font-size: 1.1rem; width: 20px; }
 .sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,.1); }
@@ -125,6 +125,7 @@ body { background: #f0f4f8; margin: 0; padding-top: 0; overflow-x: hidden; }
         <button class="nav-item" onclick="showPage('sessions', this)"><span class="icon">📅</span>場次管理</button>
         <button class="nav-item" onclick="showPage('speakers', this)"><span class="icon">👤</span>講師管理</button>
         <button class="nav-item" onclick="showPage('content', this)"><span class="icon">📝</span>內容管理</button>
+        <a class="nav-item" href="staff-scan.html" target="_blank" rel="noopener"><span class="icon">📷</span>現場掃描報到</a>
         <button class="nav-item" onclick="showPage('qr', this)"><span class="icon">📱</span>提醒信／QR Code</button>
         <button class="nav-item" onclick="showPage('export', this)"><span class="icon">📤</span>匯出名單</button>
       </nav>
@@ -509,6 +510,7 @@ async function login() {
 
     adminToken = res.token;
     sessionStorage.setItem('admin_token', adminToken);
+    localStorage.setItem('staff_admin_token', adminToken);
     document.getElementById('loginPage').style.display = 'none';
     document.getElementById('adminPage').style.display = 'block';
     initAdmin();
