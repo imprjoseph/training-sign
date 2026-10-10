@@ -31,14 +31,99 @@ button{border:0;border-radius:10px;padding:12px 14px;font-weight:900;cursor:poin
 .history{max-height:220px;overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:12px}.item{padding:9px 10px;border-bottom:1px solid #e2e8f0;font-size:.88rem}.item:last-child{border-bottom:0}
 .queue-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}.queue-count{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:34px;padding:0 10px;border-radius:999px;background:#1a3a6b;color:#fff;font-weight:900}.queue-list,.search-results{margin-top:10px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;max-height:300px;overflow:auto}.queue-item,.search-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 12px;border-bottom:1px solid #e2e8f0}.queue-item:last-child,.search-item:last-child{border-bottom:0}.queue-main{font-weight:900;color:#1a3a6b}.queue-meta{font-size:.8rem;color:#64748b;margin-top:3px}.queue-remove{padding:7px 10px;background:#fee2e2;color:#b91c1c}.queue-actions{display:grid;grid-template-columns:2fr 1fr;gap:8px;margin-top:12px}.search-name{font-weight:900;color:#1a3a6b}.search-org{font-size:.82rem;color:#64748b;margin-top:3px}.muted-empty{padding:18px;text-align:center;color:#94a3b8;font-size:.88rem}
 .help{color:#64748b;font-size:.86rem;line-height:1.6;margin-top:8px}
-@media(max-width:640px){.row,.grid3,.badges,.queue-actions{grid-template-columns:1fr}.line{display:block}.label{width:auto}}
+.top-links{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:10px}.top-link{display:inline-flex;align-items:center;gap:5px;color:#2563eb;background:#eff6ff;border:1px solid #bfdbfe;border-radius:999px;padding:7px 12px;font-size:.86rem;font-weight:900;text-decoration:none}.top-link.print{font-family:inherit;line-height:1}
+.manual{margin:16px 0;border:1px solid #bfdbfe;border-radius:16px;background:#f8fbff;overflow:hidden}.manual>summary{list-style:none;cursor:pointer;padding:15px 18px;background:linear-gradient(135deg,#1a3a6b,#2563eb);color:#fff;font-weight:900;display:flex;align-items:center;justify-content:space-between;gap:12px}.manual>summary::-webkit-details-marker{display:none}.manual>summary::after{content:'展開／收合';font-size:.76rem;font-weight:700;background:rgba(255,255,255,.18);padding:5px 9px;border-radius:999px;white-space:nowrap}.manual-body{padding:18px}.manual-lead{margin:0 0 14px;color:#475569;line-height:1.7}.manual-flow{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:18px}.flow-item{position:relative;background:#fff;border:1px solid #dbeafe;border-radius:12px;padding:12px 8px;text-align:center;color:#1a3a6b;font-weight:900;font-size:.84rem}.flow-no{display:flex;align-items:center;justify-content:center;width:28px;height:28px;margin:0 auto 7px;border-radius:50%;background:#1a3a6b;color:#fff}.manual-steps{display:grid;gap:14px}.manual-step{display:grid;grid-template-columns:42px minmax(0,1fr);gap:12px;align-items:start;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:14px}.step-no{display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:12px;background:#e8f0fe;color:#1d4ed8;font-weight:900;font-size:1.05rem}.step-title{font-weight:900;color:#1a3a6b;margin-bottom:8px}.step-text{color:#475569;font-size:.9rem;line-height:1.65}.screen-demo{margin-top:10px;border:1px solid #cbd5e1;border-radius:12px;padding:10px;background:#f8fafc}.screen-bar{height:7px;width:54px;border-radius:999px;background:#cbd5e1;margin:0 auto 9px}.screen-buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.screen-btn{padding:8px 5px;border-radius:8px;text-align:center;background:#fff;border:1px solid #dbeafe;color:#1a3a6b;font-weight:900;font-size:.75rem}.screen-btn.active{background:#1a3a6b;color:#fff}.screen-action{display:flex;align-items:center;justify-content:center;min-height:38px;border-radius:8px;background:#2563eb;color:#fff;font-weight:900;font-size:.78rem}.screen-input{display:grid;grid-template-columns:1fr auto;gap:6px}.screen-input span{background:#fff;border:1px solid #cbd5e1;border-radius:7px;padding:8px;color:#94a3b8;font-size:.72rem}.screen-input b{background:#2563eb;color:#fff;border-radius:7px;padding:8px;font-size:.72rem}.screen-list{display:grid;gap:5px}.screen-row{display:flex;justify-content:space-between;gap:8px;background:#fff;border:1px solid #e2e8f0;border-radius:7px;padding:7px 8px;font-size:.72rem}.screen-save{margin-top:7px;background:#16a34a;color:#fff;border-radius:8px;text-align:center;padding:9px;font-weight:900;font-size:.78rem}.manual-note{margin-top:16px;padding:14px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:.88rem;line-height:1.7}.manual-checks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.check{background:#ecfdf5;border:1px solid #bbf7d0;color:#166534;border-radius:10px;padding:10px;text-align:center;font-size:.82rem;font-weight:900}
+@media(max-width:720px){.manual-flow{grid-template-columns:repeat(2,1fr)}.manual-flow .flow-item:last-child{grid-column:1/-1}.manual-checks{grid-template-columns:1fr}}
+@media(max-width:640px){.row,.grid3,.badges,.queue-actions{grid-template-columns:1fr}.line{display:block}.label{width:auto}.manual-body{padding:14px}.manual-step{grid-template-columns:36px minmax(0,1fr);padding:12px}.step-no{width:34px;height:34px}.screen-buttons{grid-template-columns:1fr}}
+@media print{body{background:#fff}.wrap{max-width:none;padding:0}.card{box-shadow:none;padding:0}.top-links,#loginPanel,#workPanel,.manual>summary{display:none!important}.manual{display:block;border:0;margin:0}.manual-body{display:block;padding:0}.manual-flow{grid-template-columns:repeat(5,1fr)}.manual-steps{grid-template-columns:repeat(2,1fr)}.manual-step{break-inside:avoid}.manual-checks{grid-template-columns:repeat(3,1fr)}h1{font-size:1.6rem}.sub{margin-bottom:14px}}
 </style>
 </head>
 <body>
 <div class="wrap"><div class="card">
 <h1>工作人員現場作業</h1>
 <div class="sub">請先選擇作業模式，連續掃描會先加入待寫入清單；全部掃完後再一次送出。</div>
-<div style="text-align:center;margin-top:8px"><a href="admin.html" style="color:#2563eb;font-weight:800;text-decoration:none">← 返回管理後台</a></div>
+<div class="top-links">
+  <a class="top-link" href="admin.html">← 返回管理後台</a>
+  <a class="top-link" href="#manual" onclick="document.getElementById('manual').open=true">📖 查看操作手冊</a>
+  <button class="top-link print" type="button" onclick="printManual()">🖨️ 列印／存成 PDF</button>
+</div>
+
+<details id="manual" class="manual" open>
+  <summary><span>📖 現場報到工作人員操作手冊</span></summary>
+  <div class="manual-body">
+    <p class="manual-lead">本頁採「先連續掃描、最後一次寫入」方式。掃描時不必等待網路逐筆回傳，適合報到尖峰使用。</p>
+    <div class="manual-flow" aria-label="操作流程">
+      <div class="flow-item"><span class="flow-no">1</span>登入後台</div>
+      <div class="flow-item"><span class="flow-no">2</span>選擇模式</div>
+      <div class="flow-item"><span class="flow-no">3</span>連續掃描</div>
+      <div class="flow-item"><span class="flow-no">4</span>核對清單</div>
+      <div class="flow-item"><span class="flow-no">5</span>一次寫入</div>
+    </div>
+
+    <div class="manual-steps">
+      <div class="manual-step">
+        <div class="step-no">1</div>
+        <div>
+          <div class="step-title">登入工作人員頁面</div>
+          <div class="step-text">輸入主管提供的後台管理密碼後按「登入」。若同一台手機已從管理後台登入，通常可直接進入。</div>
+          <div class="screen-demo"><div class="screen-bar"></div><div class="screen-input"><span>請輸入後台管理密碼</span><b>登入</b></div></div>
+        </div>
+      </div>
+
+      <div class="manual-step">
+        <div class="step-no">2</div>
+        <div>
+          <div class="step-title">先選擇本台作業模式</div>
+          <div class="step-text">依櫃台用途選「完成報到」、「領取中餐」或「領取伴手禮」。藍底項目就是目前模式，開始掃描後不要任意切換。</div>
+          <div class="screen-demo"><div class="screen-bar"></div><div class="screen-buttons"><div class="screen-btn active">完成報到</div><div class="screen-btn">領取中餐</div><div class="screen-btn">領取伴手禮</div></div></div>
+        </div>
+      </div>
+
+      <div class="manual-step">
+        <div class="step-no">3</div>
+        <div>
+          <div class="step-title">開啟相機並連續掃描</div>
+          <div class="step-text">按「開啟相機連續掃描」，允許瀏覽器使用相機。每次聽到或看到成功提示後，就可接著掃下一位；資料會先留在手機的待寫入清單。</div>
+          <div class="screen-demo"><div class="screen-bar"></div><div class="screen-action">開啟相機連續掃描</div></div>
+        </div>
+      </div>
+
+      <div class="manual-step">
+        <div class="step-no">4</div>
+        <div>
+          <div class="step-title">核對待寫入清單</div>
+          <div class="step-text">畫面上的數字會顯示目前累積筆數。確認序號與作業模式正確；若誤掃，可先按該筆右側的「移除」。每批建議不超過 150 筆。</div>
+          <div class="screen-demo"><div class="screen-bar"></div><div class="screen-list"><div class="screen-row"><b>N-AM-001｜完成報到</b><span>移除</span></div><div class="screen-row"><b>N-AM-002｜完成報到</b><span>移除</span></div></div></div>
+        </div>
+      </div>
+
+      <div class="manual-step">
+        <div class="step-no">5</div>
+        <div>
+          <div class="step-title">一次寫入全部資料</div>
+          <div class="step-text">人潮稍緩或一批掃完後，按綠色「一次寫入」並確認。看到成功筆數後才算正式完成；送出期間請勿關閉頁面。</div>
+          <div class="screen-demo"><div class="screen-bar"></div><div class="screen-list"><div class="screen-row"><b>待寫入清單</b><span>2 筆</span></div></div><div class="screen-save">一次寫入 2 筆資料</div></div>
+        </div>
+      </div>
+
+      <div class="manual-step">
+        <div class="step-no">6</div>
+        <div>
+          <div class="step-title">無 QR Code 時協助查詢</div>
+          <div class="step-text">可直接輸入報到序號，或在「以姓名或單位查詢」輸入任一字。找到正確報名者後按「加入清單」，再與其他資料一起送出。</div>
+          <div class="screen-demo"><div class="screen-bar"></div><div class="screen-input"><span>輸入姓名或單位任一字</span><b>查詢</b></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="manual-note"><strong>現場異常處理：</strong>相機無法開啟時，請改用 Safari 或 Chrome，不要使用 LINE 內建瀏覽器；網路中斷時先不要清空清單，恢復連線後再按一次寫入。若顯示「已完成」，代表該項目先前已登記，不需重複操作。</div>
+    <div class="manual-checks">
+      <div class="check">✓ 交班前確認待寫入為 0 筆</div>
+      <div class="check">✓ 成功訊息出現後再關閉頁面</div>
+      <div class="check">✓ 勿把工作人員密碼提供給民眾</div>
+    </div>
+  </div>
+</details>
 
 <div id="loginPanel" class="panel">
   <div class="title">工作人員登入</div>
@@ -135,6 +220,7 @@ let currentMode='checkin',currentQr={registrationNo:'',qrToken:''},html5QrCode=n
 let pendingItems=readPendingItems(),searchResults=[];
 const modeText={checkin:'完成報到',lunch:'領取中餐',gift:'領取伴手禮'};
 function esc(v){return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function printManual(){document.getElementById('manual').open=true;window.print()}
 function msg(cls,t){document.getElementById('actionMsg').innerHTML='<div class="msg '+cls+'">'+esc(t)+'</div>'}
 function addHistory(cls,t){let l=document.getElementById('historyList');if(l.textContent.trim()==='尚無處理紀錄')l.innerHTML='';let d=document.createElement('div');d.className='item '+cls;d.textContent=new Date().toLocaleTimeString('zh-TW',{hour12:false})+'　'+t;l.insertBefore(d,l.firstChild)}
 function setMode(m){currentMode=m;['checkin','lunch','gift'].forEach(x=>document.getElementById('mode-'+x).classList.toggle('active',x===m));document.getElementById('currentModeText').textContent='目前模式：'+modeText[m];msg('info','已切換為「'+modeText[m]+'」模式，接下來掃描或輸入的資料會先加入待寫入清單。')}
