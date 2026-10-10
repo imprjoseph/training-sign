@@ -14,7 +14,7 @@ h1{font-size:1.35rem;color:#1a3a6b;text-align:center;margin:6px 0 4px}
 .panel{background:#f8faff;border:1px solid #e2e8f0;border-radius:14px;padding:16px;margin:14px 0}
 .title{font-weight:900;color:#1a3a6b;margin-bottom:10px}
 .row{display:grid;grid-template-columns:1fr auto;gap:8px}
-input{width:100%;box-sizing:border-box;padding:12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:1rem}
+input,select{width:100%;box-sizing:border-box;padding:12px;border:1.5px solid #e2e8f0;border-radius:10px;background:#fff;font-size:1rem;font-family:inherit;color:#1e293b}
 button{border:0;border-radius:10px;padding:12px 14px;font-weight:900;cursor:pointer;font-size:.95rem}
 button:disabled{opacity:.58;cursor:not-allowed}
 .primary{background:#1a3a6b;color:#fff}.blue{background:#2563eb;color:#fff}.green{background:#16a34a;color:#fff}.orange{background:#d97706;color:#fff}.purple{background:#7c3aed;color:#fff}.red{background:#dc2626;color:#fff}.outline{background:#fff;color:#2563eb;border:1.5px solid #2563eb}
@@ -54,7 +54,7 @@ button:disabled{opacity:.58;cursor:not-allowed}
   <div class="manual-body">
     <p class="manual-lead">本頁採「先連續掃描、最後一次寫入」方式。掃描時不必等待網路逐筆回傳，適合報到尖峰使用。</p>
     <div class="manual-flow" aria-label="操作流程">
-      <div class="flow-item"><span class="flow-no">1</span>登入後台</div>
+      <div class="flow-item"><span class="flow-no">1</span>登入／選場次</div>
       <div class="flow-item"><span class="flow-no">2</span>選擇模式</div>
       <div class="flow-item"><span class="flow-no">3</span>連續掃描</div>
       <div class="flow-item"><span class="flow-no">4</span>核對清單</div>
@@ -65,8 +65,8 @@ button:disabled{opacity:.58;cursor:not-allowed}
       <div class="manual-step">
         <div class="step-no">1</div>
         <div>
-          <div class="step-title">登入工作人員頁面</div>
-          <div class="step-text">輸入主管提供的後台管理密碼後按「登入」。若同一台手機已從管理後台登入，通常可直接進入。</div>
+          <div class="step-title">登入並選擇本台場次</div>
+          <div class="step-text">輸入主管提供的後台管理密碼後按「登入」，接著選定本台服務場次。選好後可直接輸入 001、002 等三位數序號，系統會自動補上場次代碼。</div>
           <div class="screen-demo"><div class="screen-bar"></div><div class="screen-input"><span>請輸入後台管理密碼</span><b>登入</b></div></div>
         </div>
       </div>
@@ -137,7 +137,16 @@ button:disabled{opacity:.58;cursor:not-allowed}
 
 <div id="workPanel" style="display:none">
   <div class="panel">
-    <div class="title">1. 選擇本台作業模式</div>
+    <div class="title">1. 選擇本台場次</div>
+    <select id="staffSessionSelect" onchange="setStaffSession(this.value)">
+      <option value="">場次資料載入中...</option>
+    </select>
+    <div class="current" id="currentSessionText">請先選擇場次</div>
+    <div class="help">選定場次後，報到序號只需輸入 001、002 等數字，系統會自動補成完整序號。</div>
+  </div>
+
+  <div class="panel">
+    <div class="title">2. 選擇本台作業模式</div>
     <div class="grid3">
       <button id="mode-checkin" class="mode active" onclick="setMode('checkin')">完成報到<small>報到櫃台</small></button>
       <button id="mode-lunch" class="mode" onclick="setMode('lunch')">領取中餐<small>餐盒發放</small></button>
@@ -147,7 +156,7 @@ button:disabled{opacity:.58;cursor:not-allowed}
   </div>
 
   <div class="panel">
-    <div class="title">2. 掃描 QR Code 或輸入序號</div>
+    <div class="title">3. 掃描 QR Code 或輸入序號</div>
     <div class="grid3">
       <button class="blue" onclick="startCameraScan()">開啟相機連續掃描</button>
       <button class="outline" onclick="focusManualInput()">使用序號輸入</button>
@@ -158,7 +167,7 @@ button:disabled{opacity:.58;cursor:not-allowed}
       <div class="help">狀態：<span id="scanState">尚未開始</span>｜待寫入：<b id="scanCount">0</b> 筆</div>
     </div>
     <div class="row" style="margin-top:12px">
-      <input id="qrInput" placeholder="輸入報到序號，例如 N-AM-001；或貼上 QR Code 網址" onkeydown="if(event.key==='Enter')processManualInput()">
+      <input id="qrInput" inputmode="numeric" placeholder="選場次後輸入 001、002；也可輸入完整序號" onkeydown="if(event.key==='Enter')processManualInput()">
       <button class="primary" onclick="processManualInput()">加入清單</button>
     </div>
     <div class="help">相機無法開啟時，請用 Safari / Chrome，不要用 LINE 內建瀏覽器；仍無法使用時，直接輸入序號。</div>
@@ -166,7 +175,7 @@ button:disabled{opacity:.58;cursor:not-allowed}
   </div>
 
   <div class="panel">
-    <div class="title">3. 以姓名或單位查詢</div>
+    <div class="title">4. 以姓名或單位查詢</div>
     <div class="row">
       <input id="searchKeyword" placeholder="輸入姓名或單位任一字" onkeydown="if(event.key==='Enter')searchPeople()">
       <button class="blue" onclick="searchPeople()">查詢</button>
@@ -177,7 +186,7 @@ button:disabled{opacity:.58;cursor:not-allowed}
 
   <div class="panel">
     <div class="queue-head">
-      <div class="title" style="margin:0">4. 待寫入清單</div>
+      <div class="title" style="margin:0">5. 待寫入清單</div>
       <span class="queue-count" id="queueCount">0</span>
     </div>
     <div id="queueList" class="queue-list"><div class="muted-empty">尚無待寫入資料</div></div>
@@ -218,17 +227,51 @@ window.API=(function(){
 })();
 let adminToken=sessionStorage.getItem('admin_token')||localStorage.getItem('staff_admin_token')||'';
 let currentMode='checkin',currentQr={registrationNo:'',qrToken:''},html5QrCode=null,scanning=false,scanBusy=false,lastScanKey='',lastScanAt=0;
-let pendingItems=readPendingItems(),searchResults=[];
+let pendingItems=readPendingItems(),searchResults=[],staffSessions=[],selectedSessionId=localStorage.getItem('staff_selected_session')||'';
 const modeText={checkin:'完成報到',lunch:'領取中餐',gift:'領取伴手禮'};
 function esc(v){return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 function printManual(){document.getElementById('manual').open=true;window.print()}
 function msg(cls,t){document.getElementById('actionMsg').innerHTML='<div class="msg '+cls+'">'+esc(t)+'</div>'}
 function addHistory(cls,t){let l=document.getElementById('historyList');if(l.textContent.trim()==='尚無處理紀錄')l.innerHTML='';let d=document.createElement('div');d.className='item '+cls;d.textContent=new Date().toLocaleTimeString('zh-TW',{hour12:false})+'　'+t;l.insertBefore(d,l.firstChild)}
 function setMode(m){currentMode=m;['checkin','lunch','gift'].forEach(x=>document.getElementById('mode-'+x).classList.toggle('active',x===m));document.getElementById('currentModeText').textContent='目前模式：'+modeText[m];msg('info','已切換為「'+modeText[m]+'」模式，接下來掃描或輸入的資料會先加入待寫入清單。')}
-async function login(){try{let r=await API.call('adminLogin',{password:document.getElementById('adminPwd').value});if(!r.success){document.getElementById('loginMsg').innerHTML='<div class="msg err">'+esc(r.error||'登入失敗')+'</div>';return}adminToken=r.token;localStorage.setItem('staff_admin_token',adminToken);document.getElementById('loginPanel').style.display='none';document.getElementById('workPanel').style.display='block';setMode('checkin');renderQueue()}catch(e){document.getElementById('loginMsg').innerHTML='<div class="msg err">連線失敗</div>'}}
-document.addEventListener('DOMContentLoaded',()=>{renderQueue();if(adminToken){document.getElementById('loginPanel').style.display='none';document.getElementById('workPanel').style.display='block';setMode('checkin')}})
+async function login(){try{let r=await API.call('adminLogin',{password:document.getElementById('adminPwd').value});if(!r.success){document.getElementById('loginMsg').innerHTML='<div class="msg err">'+esc(r.error||'登入失敗')+'</div>';return}adminToken=r.token;localStorage.setItem('staff_admin_token',adminToken);document.getElementById('loginPanel').style.display='none';document.getElementById('workPanel').style.display='block';setMode('checkin');renderQueue();loadStaffSessions()}catch(e){document.getElementById('loginMsg').innerHTML='<div class="msg err">連線失敗</div>'}}
+document.addEventListener('DOMContentLoaded',()=>{renderQueue();if(adminToken){document.getElementById('loginPanel').style.display='none';document.getElementById('workPanel').style.display='block';setMode('checkin');loadStaffSessions()}})
 window.addEventListener('beforeunload',e=>{if(pendingItems.length){e.preventDefault();e.returnValue=''}})
-function parseQrText(t){t=String(t||'').trim();if(!t)return null;let registrationNo='',qrToken='';try{let u=new URL(t);registrationNo=(u.searchParams.get('registrationNo')||u.searchParams.get('regNo')||'').trim();qrToken=(u.searchParams.get('token')||'').trim()}catch(e){registrationNo=t}return registrationNo?{registrationNo,qrToken}:null}
+async function loadStaffSessions(){
+  let sel=document.getElementById('staffSessionSelect');
+  try{
+    let r=await API.call('getSessions'),list=Array.isArray(r)?r:(r&&Array.isArray(r.data)?r.data:[]);
+    staffSessions=list;sel.innerHTML='<option value="">── 請選擇場次 ──</option>'+list.map(s=>'<option value="'+esc(s.sessionId)+'">'+esc([s.sessionName,s.date,s.startTime].filter(Boolean).join('｜'))+'</option>').join('');
+    if(selectedSessionId&&list.some(s=>String(s.sessionId)===String(selectedSessionId)))sel.value=selectedSessionId;else selectedSessionId='';
+    setStaffSession(selectedSessionId,false);
+  }catch(e){sel.innerHTML='<option value="">場次載入失敗，請重新整理</option>';document.getElementById('currentSessionText').textContent='場次資料載入失敗'}
+}
+function selectedSession(){return staffSessions.find(s=>String(s.sessionId)===String(selectedSessionId))}
+function setStaffSession(id,announce){
+  selectedSessionId=String(id||'');
+  if(selectedSessionId)localStorage.setItem('staff_selected_session',selectedSessionId);else localStorage.removeItem('staff_selected_session');
+  let s=selectedSession(),label=s?(s.sessionName+'｜序號前綴 '+sessionPrefix()):'請先選擇場次';
+  document.getElementById('currentSessionText').textContent=label;
+  if(announce!==false){
+    searchResults=[];document.getElementById('searchResults').innerHTML='<div class="muted-empty">場次已切換，請重新查詢</div>';
+    msg(s?'info':'warn',s?'已選擇「'+s.sessionName+'」，可直接輸入 001、002。':'請先選擇場次，再輸入三位數序號。')
+  }
+}
+function sessionPrefix(){return String(selectedSessionId||'').replace(/[^A-Za-z0-9]/g,'-').toUpperCase()}
+function expandRegistrationNo(value){
+  let v=String(value||'').trim().toUpperCase();
+  if(/^\d{1,3}$/.test(v)){
+    if(!selectedSessionId)return{error:'請先選擇場次，再輸入 001、002 等序號。'};
+    v=sessionPrefix()+'-'+v.padStart(3,'0')
+  }
+  return{value:v}
+}
+function parseQrText(t){
+  t=String(t||'').trim();if(!t)return null;let registrationNo='',qrToken='';
+  try{let u=new URL(t);registrationNo=(u.searchParams.get('registrationNo')||u.searchParams.get('regNo')||'').trim();qrToken=(u.searchParams.get('token')||'').trim()}catch(e){registrationNo=t}
+  let expanded=expandRegistrationNo(registrationNo);if(expanded.error)return expanded;
+  return expanded.value?{registrationNo:expanded.value,qrToken}:null
+}
 function focusManualInput(){let i=document.getElementById('qrInput');i.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>{i.focus();i.select()},250)}
 function readPendingItems(){try{let v=JSON.parse(localStorage.getItem('staff_pending_items')||'[]');return Array.isArray(v)?v:[]}catch(e){return[]}}
 function savePendingItems(){localStorage.setItem('staff_pending_items',JSON.stringify(pendingItems))}
@@ -243,7 +286,7 @@ function queueItem(registrationNo,qrToken,source,mode,data){
   msg('ok',no+' 已加入「'+modeText[scanType]+'」待寫入清單');addHistory('info',no+'｜'+modeText[scanType]+'｜已加入清單');
   if(data)renderData(data);if(navigator.vibrate)navigator.vibrate(70);return true
 }
-function processManualInput(){let p=parseQrText(document.getElementById('qrInput').value);if(!p){msg('err','請輸入報到序號或貼上 QR Code 網址');return}queueItem(p.registrationNo,p.qrToken,'手動輸入')}
+function processManualInput(){let p=parseQrText(document.getElementById('qrInput').value);if(!p){msg('err','請輸入報到序號或貼上 QR Code 網址');return}if(p.error){msg('err',p.error);return}queueItem(p.registrationNo,p.qrToken,'手動輸入')}
 function renderQueue(){
   let count=pendingItems.length,q=document.getElementById('queueList');document.getElementById('queueCount').textContent=count;document.getElementById('scanCount').textContent=count;
   document.getElementById('submitBatchBtn').textContent=count?'一次寫入 '+count+' 筆資料':'一次寫入全部資料';
@@ -267,7 +310,7 @@ async function submitBatch(){
 async function searchPeople(){
   let keyword=document.getElementById('searchKeyword').value.trim(),box=document.getElementById('searchResults');if(!keyword){box.innerHTML='<div class="muted-empty">請輸入姓名或單位任一字</div>';return}
   box.innerHTML='<div class="muted-empty">查詢中...</div>';
-  try{let r=await API.call('staffSearchRegistrations',{token:adminToken,keyword:keyword});if(!r.success){box.innerHTML='<div class="muted-empty">'+esc(r.error||'查詢失敗')+'</div>';return}searchResults=r.data||[];renderSearchResults()}catch(e){box.innerHTML='<div class="muted-empty">連線失敗，請稍後再試</div>'}
+  try{let r=await API.call('staffSearchRegistrations',{token:adminToken,keyword:keyword});if(!r.success){box.innerHTML='<div class="muted-empty">'+esc(r.error||'查詢失敗')+'</div>';return}searchResults=r.data||[];let s=selectedSession();if(s)searchResults=searchResults.filter(d=>String(d.sessionName)===String(s.sessionName));renderSearchResults()}catch(e){box.innerHTML='<div class="muted-empty">連線失敗，請稍後再試</div>'}
 }
 function isDoneStatus(v){v=String(v||'');return v.indexOf('已')===0||v.indexOf('完成')>=0}
 function renderSearchResults(){
@@ -329,6 +372,7 @@ async function startCameraScan(){
 }
 async function onScanSuccess(decodedText){
   if(scanBusy)return;let p=parseQrText(decodedText);if(!p)return;
+  if(p.error){msg('err',p.error);return}
   let key=p.registrationNo+'|'+p.qrToken+'|'+currentMode,now=Date.now();if(key===lastScanKey&&now-lastScanAt<1500)return;
   scanBusy=true;lastScanKey=key;lastScanAt=now;document.getElementById('qrInput').value=decodedText;document.getElementById('scanState').textContent='已加入清單：'+p.registrationNo;
   queueItem(p.registrationNo,p.qrToken,'QR Code 掃描');setTimeout(()=>{scanBusy=false;document.getElementById('scanState').textContent='連續掃描中：'+modeText[currentMode]},150)
