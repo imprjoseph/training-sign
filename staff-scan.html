@@ -16,6 +16,7 @@ h1{font-size:1.35rem;color:#1a3a6b;text-align:center;margin:6px 0 4px}
 .row{display:grid;grid-template-columns:1fr auto;gap:8px}
 input{width:100%;box-sizing:border-box;padding:12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:1rem}
 button{border:0;border-radius:10px;padding:12px 14px;font-weight:900;cursor:pointer;font-size:.95rem}
+button:disabled{opacity:.58;cursor:not-allowed}
 .primary{background:#1a3a6b;color:#fff}.blue{background:#2563eb;color:#fff}.green{background:#16a34a;color:#fff}.orange{background:#d97706;color:#fff}.purple{background:#7c3aed;color:#fff}.red{background:#dc2626;color:#fff}.outline{background:#fff;color:#2563eb;border:1.5px solid #2563eb}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .mode{background:#fff;color:#1a3a6b;border:2px solid #dbeafe}
@@ -29,12 +30,12 @@ button{border:0;border-radius:10px;padding:12px 14px;font-weight:900;cursor:poin
 .line{display:flex;gap:10px;border-bottom:1px solid #e2e8f0;padding:7px 0}.line:last-child{border-bottom:0}.label{width:90px;color:#64748b;font-weight:900}.val{font-weight:800}
 .badges{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.badge{background:#f1f5f9;border-radius:12px;padding:10px;text-align:center;font-weight:900}.done{background:#dcfce7;color:#15803d}.todo{background:#fef3c7;color:#b45309}
 .history{max-height:220px;overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:12px}.item{padding:9px 10px;border-bottom:1px solid #e2e8f0;font-size:.88rem}.item:last-child{border-bottom:0}
-.queue-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}.queue-count{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:34px;padding:0 10px;border-radius:999px;background:#1a3a6b;color:#fff;font-weight:900}.queue-list,.search-results{margin-top:10px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;max-height:300px;overflow:auto}.queue-item,.search-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 12px;border-bottom:1px solid #e2e8f0}.queue-item:last-child,.search-item:last-child{border-bottom:0}.queue-main{font-weight:900;color:#1a3a6b}.queue-meta{font-size:.8rem;color:#64748b;margin-top:3px}.queue-remove{padding:7px 10px;background:#fee2e2;color:#b91c1c}.queue-actions{display:grid;grid-template-columns:2fr 1fr;gap:8px;margin-top:12px}.search-name{font-weight:900;color:#1a3a6b}.search-org{font-size:.82rem;color:#64748b;margin-top:3px}.muted-empty{padding:18px;text-align:center;color:#94a3b8;font-size:.88rem}
+.queue-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}.queue-count{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:34px;padding:0 10px;border-radius:999px;background:#1a3a6b;color:#fff;font-weight:900}.queue-list,.search-results{margin-top:10px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;max-height:300px;overflow:auto}.queue-item,.search-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 12px;border-bottom:1px solid #e2e8f0}.queue-item:last-child,.search-item:last-child{border-bottom:0}.queue-main{font-weight:900;color:#1a3a6b}.queue-meta{font-size:.8rem;color:#64748b;margin-top:3px}.queue-remove{padding:7px 10px;background:#fee2e2;color:#b91c1c}.queue-actions{display:grid;grid-template-columns:2fr 1fr;gap:8px;margin-top:12px}.search-name{font-weight:900;color:#1a3a6b}.search-org{font-size:.82rem;color:#64748b;margin-top:3px}.search-actions{display:flex;gap:6px;align-items:center}.search-actions button{padding:8px 10px;font-size:.82rem;white-space:nowrap}.muted-empty{padding:18px;text-align:center;color:#94a3b8;font-size:.88rem}
 .help{color:#64748b;font-size:.86rem;line-height:1.6;margin-top:8px}
 .top-links{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:10px}.top-link{display:inline-flex;align-items:center;gap:5px;color:#2563eb;background:#eff6ff;border:1px solid #bfdbfe;border-radius:999px;padding:7px 12px;font-size:.86rem;font-weight:900;text-decoration:none}.top-link.print{font-family:inherit;line-height:1}
 .manual{margin:16px 0;border:1px solid #bfdbfe;border-radius:16px;background:#f8fbff;overflow:hidden}.manual>summary{list-style:none;cursor:pointer;padding:15px 18px;background:linear-gradient(135deg,#1a3a6b,#2563eb);color:#fff;font-weight:900;display:flex;align-items:center;justify-content:space-between;gap:12px}.manual>summary::-webkit-details-marker{display:none}.manual>summary::after{content:'展開／收合';font-size:.76rem;font-weight:700;background:rgba(255,255,255,.18);padding:5px 9px;border-radius:999px;white-space:nowrap}.manual-body{padding:18px}.manual-lead{margin:0 0 14px;color:#475569;line-height:1.7}.manual-flow{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:18px}.flow-item{position:relative;background:#fff;border:1px solid #dbeafe;border-radius:12px;padding:12px 8px;text-align:center;color:#1a3a6b;font-weight:900;font-size:.84rem}.flow-no{display:flex;align-items:center;justify-content:center;width:28px;height:28px;margin:0 auto 7px;border-radius:50%;background:#1a3a6b;color:#fff}.manual-steps{display:grid;gap:14px}.manual-step{display:grid;grid-template-columns:42px minmax(0,1fr);gap:12px;align-items:start;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:14px}.step-no{display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:12px;background:#e8f0fe;color:#1d4ed8;font-weight:900;font-size:1.05rem}.step-title{font-weight:900;color:#1a3a6b;margin-bottom:8px}.step-text{color:#475569;font-size:.9rem;line-height:1.65}.screen-demo{margin-top:10px;border:1px solid #cbd5e1;border-radius:12px;padding:10px;background:#f8fafc}.screen-bar{height:7px;width:54px;border-radius:999px;background:#cbd5e1;margin:0 auto 9px}.screen-buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.screen-btn{padding:8px 5px;border-radius:8px;text-align:center;background:#fff;border:1px solid #dbeafe;color:#1a3a6b;font-weight:900;font-size:.75rem}.screen-btn.active{background:#1a3a6b;color:#fff}.screen-action{display:flex;align-items:center;justify-content:center;min-height:38px;border-radius:8px;background:#2563eb;color:#fff;font-weight:900;font-size:.78rem}.screen-input{display:grid;grid-template-columns:1fr auto;gap:6px}.screen-input span{background:#fff;border:1px solid #cbd5e1;border-radius:7px;padding:8px;color:#94a3b8;font-size:.72rem}.screen-input b{background:#2563eb;color:#fff;border-radius:7px;padding:8px;font-size:.72rem}.screen-list{display:grid;gap:5px}.screen-row{display:flex;justify-content:space-between;gap:8px;background:#fff;border:1px solid #e2e8f0;border-radius:7px;padding:7px 8px;font-size:.72rem}.screen-save{margin-top:7px;background:#16a34a;color:#fff;border-radius:8px;text-align:center;padding:9px;font-weight:900;font-size:.78rem}.manual-note{margin-top:16px;padding:14px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:.88rem;line-height:1.7}.manual-checks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.check{background:#ecfdf5;border:1px solid #bbf7d0;color:#166534;border-radius:10px;padding:10px;text-align:center;font-size:.82rem;font-weight:900}
 @media(max-width:720px){.manual-flow{grid-template-columns:repeat(2,1fr)}.manual-flow .flow-item:last-child{grid-column:1/-1}.manual-checks{grid-template-columns:1fr}}
-@media(max-width:640px){.row,.grid3,.badges,.queue-actions{grid-template-columns:1fr}.line{display:block}.label{width:auto}.manual-body{padding:14px}.manual-step{grid-template-columns:36px minmax(0,1fr);padding:12px}.step-no{width:34px;height:34px}.screen-buttons{grid-template-columns:1fr}}
+@media(max-width:640px){.row,.grid3,.badges,.queue-actions{grid-template-columns:1fr}.line{display:block}.label{width:auto}.manual-body{padding:14px}.manual-step{grid-template-columns:36px minmax(0,1fr);padding:12px}.step-no{width:34px;height:34px}.screen-buttons{grid-template-columns:1fr}.search-item{grid-template-columns:1fr}.search-actions{display:grid;grid-template-columns:1fr 1fr}}
 @media print{body{background:#fff}.wrap{max-width:none;padding:0}.card{box-shadow:none;padding:0}.top-links,#loginPanel,#workPanel,.manual>summary{display:none!important}.manual{display:block;border:0;margin:0}.manual-body{display:block;padding:0}.manual-flow{grid-template-columns:repeat(5,1fr)}.manual-steps{grid-template-columns:repeat(2,1fr)}.manual-step{break-inside:avoid}.manual-checks{grid-template-columns:repeat(3,1fr)}h1{font-size:1.6rem}.sub{margin-bottom:14px}}
 </style>
 </head>
@@ -110,7 +111,7 @@ button{border:0;border-radius:10px;padding:12px 14px;font-weight:900;cursor:poin
         <div class="step-no">6</div>
         <div>
           <div class="step-title">無 QR Code 時協助查詢</div>
-          <div class="step-text">可直接輸入報到序號，或在「以姓名或單位查詢」輸入任一字。找到正確報名者後按「加入清單」，再與其他資料一起送出。</div>
+          <div class="step-text">可直接輸入報到序號，或在「以姓名或單位查詢」輸入任一字。找到正確報名者後按「直接報到」即可立即完成；中餐、伴手禮等作業則按「加入清單」批次送出。</div>
           <div class="screen-demo"><div class="screen-bar"></div><div class="screen-input"><span>輸入姓名或單位任一字</span><b>查詢</b></div></div>
         </div>
       </div>
@@ -170,7 +171,7 @@ button{border:0;border-radius:10px;padding:12px 14px;font-weight:900;cursor:poin
       <input id="searchKeyword" placeholder="輸入姓名或單位任一字" onkeydown="if(event.key==='Enter')searchPeople()">
       <button class="blue" onclick="searchPeople()">查詢</button>
     </div>
-    <div class="help">找到報名者後，點「加入清單」即可依目前作業模式協助處理。</div>
+    <div class="help">找到報名者後，可按「直接報到」立即寫入；其他作業則按「加入清單」，依目前模式批次處理。</div>
     <div id="searchResults" class="search-results"><div class="muted-empty">尚未查詢</div></div>
   </div>
 
@@ -266,7 +267,36 @@ async function submitBatch(){
 async function searchPeople(){
   let keyword=document.getElementById('searchKeyword').value.trim(),box=document.getElementById('searchResults');if(!keyword){box.innerHTML='<div class="muted-empty">請輸入姓名或單位任一字</div>';return}
   box.innerHTML='<div class="muted-empty">查詢中...</div>';
-  try{let r=await API.call('staffSearchRegistrations',{token:adminToken,keyword:keyword});if(!r.success){box.innerHTML='<div class="muted-empty">'+esc(r.error||'查詢失敗')+'</div>';return}searchResults=r.data||[];if(!searchResults.length){box.innerHTML='<div class="muted-empty">查無符合資料</div>';return}box.innerHTML=searchResults.map((d,i)=>'<div class="search-item"><div><div class="search-name">'+esc(d.name)+'｜'+esc(d.registrationNo)+'</div><div class="search-org">'+esc(d.organization)+'｜'+esc(d.sessionName)+'｜報到：'+esc(d.checkinStatus)+'</div></div><button class="primary" onclick="addSearchResult('+i+')">加入清單</button></div>').join('')}catch(e){box.innerHTML='<div class="muted-empty">連線失敗，請稍後再試</div>'}
+  try{let r=await API.call('staffSearchRegistrations',{token:adminToken,keyword:keyword});if(!r.success){box.innerHTML='<div class="muted-empty">'+esc(r.error||'查詢失敗')+'</div>';return}searchResults=r.data||[];renderSearchResults()}catch(e){box.innerHTML='<div class="muted-empty">連線失敗，請稍後再試</div>'}
+}
+function isDoneStatus(v){v=String(v||'');return v.indexOf('已')===0||v.indexOf('完成')>=0}
+function renderSearchResults(){
+  let box=document.getElementById('searchResults');
+  if(!searchResults.length){box.innerHTML='<div class="muted-empty">查無符合資料</div>';return}
+  box.innerHTML=searchResults.map((d,i)=>{
+    let done=isDoneStatus(d.checkinStatus);
+    return '<div class="search-item"><div><div class="search-name">'+esc(d.name)+'｜'+esc(d.registrationNo)+'</div><div class="search-org">'+esc(d.organization)+'｜'+esc(d.sessionName)+'｜報到：'+esc(d.checkinStatus)+'</div></div><div class="search-actions"><button class="green" '+(done?'disabled':'')+' onclick="directCheckin('+i+',this)">'+(done?'已報到':'直接報到')+'</button><button class="outline" onclick="addSearchResult('+i+')">加入清單</button></div></div>'
+  }).join('')
+}
+async function directCheckin(i,btn){
+  let d=searchResults[i];if(!d)return;
+  if(isDoneStatus(d.checkinStatus)){msg('warn',d.registrationNo+' 已完成報到');return}
+  let original=btn.textContent;btn.disabled=true;btn.textContent='報到中...';
+  msg('info','正在為 '+d.name+'（'+d.registrationNo+'）辦理報到...');
+  try{
+    let item={clientId:makeClientId(),registrationNo:d.registrationNo,qrToken:'',scanType:'checkin',source:'姓名／單位查詢直接報到',name:d.name,organization:d.organization,sessionName:d.sessionName};
+    let r=await API.call('staffScanBatch',{token:adminToken,items:[item],operator:'onsite_staff_search'});
+    if(!r.success)throw new Error(r.error||'直接報到失敗');
+    let x=(r.results||[])[0];if(!x)throw new Error('未收到報到結果');
+    if(x.success||x.alreadyDone){
+      d.checkinStatus=(x.data&&x.data.checkinStatus)||'已報到';
+      if(x.data){searchResults[i]=Object.assign({},d,x.data);renderData(x.data)}else renderData(d);
+      let text=d.registrationNo+'｜'+d.name+'｜'+(x.message||'已完成報到');
+      addHistory(x.success?'ok':'warn',text);msg(x.success?'ok':'warn',text);renderSearchResults();
+      if(navigator.vibrate)navigator.vibrate(70);return
+    }
+    throw new Error(x.message||'直接報到失敗');
+  }catch(e){msg('err',e.message||'直接報到失敗，請確認網路後再試。');btn.disabled=false;btn.textContent=original}
 }
 function addSearchResult(i){let d=searchResults[i];if(!d)return;queueItem(d.registrationNo,'','姓名／單位查詢',currentMode,d)}
 function renderData(d){
