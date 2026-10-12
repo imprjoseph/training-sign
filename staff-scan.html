@@ -320,7 +320,7 @@ async function submitBatch(){
 async function searchPeople(){
   let keyword=document.getElementById('searchKeyword').value.trim(),box=document.getElementById('searchResults');if(!keyword){box.innerHTML='<div class="muted-empty">請輸入姓名或單位任一字</div>';return}
   box.innerHTML='<div class="muted-empty">查詢中...</div>';
-  try{let r=await API.call('staffSearchRegistrations',{token:adminToken,keyword:keyword});if(!r.success){box.innerHTML='<div class="muted-empty">'+esc(r.error||'查詢失敗')+'</div>';return}searchResults=r.data||[];let s=selectedSession();if(s)searchResults=searchResults.filter(d=>String(d.sessionName)===String(s.sessionName));renderSearchResults()}catch(e){box.innerHTML='<div class="muted-empty">連線失敗，請稍後再試</div>'}
+  try{let r=await API.call('staffSearchRegistrations',{token:adminToken,keyword:keyword,sessionId:selectedSessionId});if(!r.success){box.innerHTML='<div class="muted-empty">'+esc(r.error||'查詢失敗')+'</div>';return}searchResults=r.data||[];renderSearchResults()}catch(e){box.innerHTML='<div class="muted-empty">連線失敗，請稍後再試</div>'}
 }
 function isDoneStatus(v){v=String(v||'');return v.indexOf('已')===0||v.indexOf('完成')>=0}
 function renderSearchResults(){
