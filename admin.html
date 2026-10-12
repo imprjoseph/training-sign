@@ -139,7 +139,10 @@ body { background: #f0f4f8; margin: 0; padding-top: 0; overflow-x: hidden; }
       <div id="page-dashboard">
         <div class="page-header">
           <div class="page-title">📊 Dashboard</div>
-          <button class="admin-btn admin-btn-outline" onclick="loadDashboard()">🔄 重新整理</button>
+          <div class="filter-bar" style="margin:0">
+            <select class="filter-input" id="dashboardSession" onchange="loadDashboard()"><option value="">全部場次</option></select>
+            <button class="admin-btn admin-btn-outline" onclick="loadDashboard()">🔄 重新整理</button>
+          </div>
         </div>
         <div class="stat-grid" id="statGrid"><div class="loading-state">載入中...</div></div>
         <div class="session-stat-grid" id="sessionStatGrid"></div>
@@ -589,9 +592,11 @@ async function loadAllSessions() {
 
   allSessions = res.data;
 
-  ['filterSession', 'exportSession', 'qrSession', 'reminderSession'].forEach(function(id) {
+  ['dashboardSession', 'filterSession', 'exportSession', 'qrSession', 'reminderSession'].forEach(function(id) {
     const sel = document.getElementById(id);
     if (!sel) return;
+
+    const previousValue = sel.value;
 
     const def = id === 'qrSession'
       ? '<option value="">全域（通用）</option>'
@@ -605,6 +610,10 @@ async function loadAllSessions() {
         `<option value="${s.sessionId}">${s.sessionName}</option>`
       );
     });
+
+    if (previousValue && allSessions.some(function(s) { return String(s.sessionId) === String(previousValue); })) {
+      sel.value = previousValue;
+    }
   });
 
   const mSel = document.getElementById('m_sessionId');
@@ -620,11 +629,12 @@ async function loadAllSessions() {
 }
 
 async function loadDashboard() {
+  const sessionId = document.getElementById('dashboardSession').value;
   document.getElementById('statGrid').innerHTML =
     '<div class="loading-state">載入中...</div>';
 
   try {
-    const res = await api('getDashboard');
+    const res = await api('getDashboard', { sessionId: sessionId });
 
     if (!res.success) {
       document.getElementById('statGrid').innerHTML =
