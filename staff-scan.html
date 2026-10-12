@@ -222,12 +222,12 @@ button:disabled{opacity:.58;cursor:not-allowed}
   <div class="panel">
     <div class="attendance-head">
       <div class="title" style="margin:0">各場實際出席人數</div>
-      <span class="attendance-total" id="attendanceTotal">合計 0 人</span>
+      <span class="attendance-total" id="attendanceTotal">尚未統計</span>
     </div>
-    <div id="attendanceList" class="attendance-list"><div class="muted-empty">統計載入中...</div></div>
+    <div id="attendanceList" class="attendance-list"><div class="muted-empty">請按下方「重新統計」取得各場最新出席人數</div></div>
     <div class="attendance-tools">
       <span class="attendance-updated" id="attendanceUpdated"></span>
-      <button class="outline" type="button" onclick="refreshAttendanceStats(true)">重新整理</button>
+      <button class="outline" type="button" onclick="refreshAttendanceStats(true)">重新統計</button>
     </div>
   </div>
 
@@ -251,7 +251,7 @@ window.API=(function(){
 let adminToken=sessionStorage.getItem('admin_token')||localStorage.getItem('staff_admin_token')||'';
 let currentMode='checkin',currentQr={registrationNo:'',qrToken:''},html5QrCode=null,scanning=false,scanBusy=false,lastScanKey='',lastScanAt=0;
 let pendingItems=readPendingItems(),pendingKeys=new Set(pendingItems.map(x=>String(x.registrationNo||'').toUpperCase()+'|'+String(x.scanType||'checkin'))),pendingSaveTimer=null,lastPendingSaveAt=0;
-let searchResults=[],staffRoster=[],staffRosterReady=false,staffRosterSessionId='',staffSessions=[],attendanceRefreshTimer=null,selectedSessionId=localStorage.getItem('staff_selected_session')||'';
+let searchResults=[],staffRoster=[],staffRosterReady=false,staffRosterSessionId='',staffSessions=[],selectedSessionId=localStorage.getItem('staff_selected_session')||'';
 const modeText={checkin:'完成報到',lunch:'領取中餐',gift:'領取伴手禮'};
 function esc(v){return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 function printManual(){document.getElementById('manual').open=true;window.print()}
@@ -265,9 +265,9 @@ async function loadStaffSessions(){
   let sel=document.getElementById('staffSessionSelect');
   try{
     let r=await API.call('getSessions'),list=Array.isArray(r)?r:(r&&Array.isArray(r.data)?r.data:[]);
-    staffSessions=list;renderAttendanceStats(list);sel.innerHTML='<option value="">── 請選擇場次 ──</option>'+list.map(s=>'<option value="'+esc(s.sessionId)+'">'+esc([s.sessionName,s.date,s.startTime].filter(Boolean).join('｜'))+'</option>').join('');
+    staffSessions=list;sel.innerHTML='<option value="">── 請選擇場次 ──</option>'+list.map(s=>'<option value="'+esc(s.sessionId)+'">'+esc([s.sessionName,s.date,s.startTime].filter(Boolean).join('｜'))+'</option>').join('');
     if(selectedSessionId&&list.some(s=>String(s.sessionId)===String(selectedSessionId)))sel.value=selectedSessionId;else selectedSessionId='';
-    setStaffSession(selectedSessionId,false);startAttendanceAutoRefresh();
+    setStaffSession(selectedSessionId,false);
   }catch(e){sel.innerHTML='<option value="">場次載入失敗，請重新整理</option>';document.getElementById('currentSessionText').textContent='場次資料載入失敗'}
 }
 function renderAttendanceStats(list){
@@ -284,7 +284,6 @@ async function refreshAttendanceStats(announce){
     if(announce)msg('ok','各場實際出席人數已更新')
   }catch(e){if(announce)msg('err','統計更新失敗，請稍後再試')}
 }
-function startAttendanceAutoRefresh(){if(attendanceRefreshTimer)return;attendanceRefreshTimer=setInterval(()=>refreshAttendanceStats(false),30000)}
 function selectedSession(){return staffSessions.find(s=>String(s.sessionId)===String(selectedSessionId))}
 function setStaffSession(id,announce){
   selectedSessionId=String(id||'');
@@ -353,7 +352,6 @@ async function submitBatch(){
     pendingItems=pendingItems.filter(x=>!finished[x.clientId]);pendingKeys=new Set(pendingItems.map(x=>pendingKey(x.registrationNo,x.scanType)));savePendingItems();renderQueue();
     let duration=Number(r.durationMs||0),durationText=duration?'，耗時 '+(duration/1000).toFixed(1)+' 秒':'';
     msg(r.failed?'warn':'ok','批次完成：成功 '+r.updated+' 筆、已完成略過 '+r.alreadyDone+' 筆、失敗 '+r.failed+' 筆'+durationText+'。');
-    refreshAttendanceStats(false);
   }catch(e){msg('err','批次寫入失敗，清單已保留，請確認網路後再送出。')}finally{btn.disabled=false;renderQueue()}
 }
 async function loadStaffRoster(){
@@ -403,7 +401,6 @@ async function directCheckin(i,btn){
       if(x.data){searchResults[i]=Object.assign({},d,x.data);mergeStaffRoster([searchResults[i]]);renderData(x.data)}else renderData(d);
       let text=d.registrationNo+'｜'+d.name+'｜'+(x.message||'已完成報到');
       addHistory(x.success?'ok':'warn',text);msg(x.success?'ok':'warn',text);renderSearchResults();
-      refreshAttendanceStats(false);
       if(navigator.vibrate)navigator.vibrate(70);return
     }
     throw new Error(x.message||'直接報到失敗');
