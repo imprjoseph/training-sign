@@ -314,7 +314,8 @@ async function submitBatch(){
     if(!r.success){msg('err',r.error||'批次寫入失敗');return}
     let finished={};(r.results||[]).forEach(x=>{let cls=x.success?'ok':(x.alreadyDone?'warn':'err');addHistory(cls,x.registrationNo+'｜'+(modeText[x.scanType]||x.scanType)+'｜'+(x.message||''));if(x.success||x.alreadyDone)finished[x.clientId]=true;if(x.data&&x.success)renderData(x.data)});
     pendingItems=pendingItems.filter(x=>!finished[x.clientId]);savePendingItems();renderQueue();
-    msg(r.failed?'warn':'ok','批次完成：成功 '+r.updated+' 筆、已完成略過 '+r.alreadyDone+' 筆、失敗 '+r.failed+' 筆。');
+    let duration=Number(r.durationMs||0),durationText=duration?'，耗時 '+(duration/1000).toFixed(1)+' 秒':'';
+    msg(r.failed?'warn':'ok','批次完成：成功 '+r.updated+' 筆、已完成略過 '+r.alreadyDone+' 筆、失敗 '+r.failed+' 筆'+durationText+'。');
   }catch(e){msg('err','批次寫入失敗，清單已保留，請確認網路後再送出。')}finally{btn.disabled=false;renderQueue()}
 }
 async function searchPeople(){
