@@ -237,7 +237,8 @@ window.API=(function(){
 })();
 let adminToken=sessionStorage.getItem('admin_token')||localStorage.getItem('staff_admin_token')||'';
 let currentMode='checkin',currentQr={registrationNo:'',qrToken:''},html5QrCode=null,scanning=false,scanBusy=false,lastScanKey='',lastScanAt=0;
-let pendingItems=readPendingItems(),searchResults=[],staffSessions=[],selectedSessionId=localStorage.getItem('staff_selected_session')||'';
+let pendingItems=readPendingItems(),pendingKeys=new Set(pendingItems.map(x=>String(x.registrationNo||'').toUpperCase()+'|'+String(x.scanType||'checkin'))),pendingSaveTimer=null,lastPendingSaveAt=0;
+let searchResults=[],staffRoster=[],staffRosterReady=false,staffRosterSessionId='',staffSessions=[],selectedSessionId=localStorage.getItem('staff_selected_session')||'';
 const modeText={checkin:'完成報到',lunch:'領取中餐',gift:'領取伴手禮'};
 function esc(v){return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 function printManual(){document.getElementById('manual').open=true;window.print()}
@@ -246,7 +247,7 @@ function addHistory(cls,t){let l=document.getElementById('historyList');if(l.tex
 function setMode(m){currentMode=m;['checkin','lunch','gift'].forEach(x=>document.getElementById('mode-'+x).classList.toggle('active',x===m));document.getElementById('currentModeText').textContent='目前模式：'+modeText[m];msg('info','已切換為「'+modeText[m]+'」模式，接下來掃描或輸入的資料會先加入待寫入清單。')}
 async function login(){try{let r=await API.call('adminLogin',{password:document.getElementById('adminPwd').value});if(!r.success){document.getElementById('loginMsg').innerHTML='<div class="msg err">'+esc(r.error||'登入失敗')+'</div>';return}adminToken=r.token;localStorage.setItem('staff_admin_token',adminToken);document.getElementById('loginPanel').style.display='none';document.getElementById('workPanel').style.display='block';setMode('checkin');renderQueue();loadStaffSessions()}catch(e){document.getElementById('loginMsg').innerHTML='<div class="msg err">連線失敗</div>'}}
 document.addEventListener('DOMContentLoaded',()=>{renderQueue();if(adminToken){document.getElementById('loginPanel').style.display='none';document.getElementById('workPanel').style.display='block';setMode('checkin');loadStaffSessions()}})
-window.addEventListener('beforeunload',e=>{if(pendingItems.length){e.preventDefault();e.returnValue=''}})
+window.addEventListener('beforeunload',e=>{if(pendingItems.length){savePendingItems();e.preventDefault();e.returnValue=''}})
 async function loadStaffSessions(){
   let sel=document.getElementById('staffSessionSelect');
   try{
@@ -266,6 +267,7 @@ function setStaffSession(id,announce){
     searchResults=[];document.getElementById('searchResults').innerHTML='<div class="muted-empty">場次已切換，請重新查詢</div>';
     msg(s?'info':'warn',s?'已選擇「'+s.sessionName+'」，可直接輸入 001、002。':'請先選擇場次，再輸入三位數序號。')
   }
+  loadStaffRoster();
 }
 function sessionPrefix(){return String(selectedSessionId||'').replace(/[^A-Za-z0-9]/g,'-').toUpperCase()}
 function expandRegistrationNo(value){
@@ -284,15 +286,22 @@ function parseQrText(t){
 }
 function focusManualInput(){let i=document.getElementById('qrInput');i.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>{i.focus();i.select()},250)}
 function readPendingItems(){try{let v=JSON.parse(localStorage.getItem('staff_pending_items')||'[]');return Array.isArray(v)?v:[]}catch(e){return[]}}
-function savePendingItems(){localStorage.setItem('staff_pending_items',JSON.stringify(pendingItems))}
+function pendingKey(no,mode){return String(no||'').toUpperCase()+'|'+String(mode||'checkin')}
+function savePendingItems(){localStorage.setItem('staff_pending_items',JSON.stringify(pendingItems));lastPendingSaveAt=Date.now()}
+function schedulePendingSave(){
+  let elapsed=Date.now()-lastPendingSaveAt;
+  if(elapsed>500){if(pendingSaveTimer)clearTimeout(pendingSaveTimer);pendingSaveTimer=null;savePendingItems();return}
+  if(pendingSaveTimer)clearTimeout(pendingSaveTimer);
+  pendingSaveTimer=setTimeout(()=>{pendingSaveTimer=null;savePendingItems()},120)
+}
 function makeClientId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
 function queueItem(registrationNo,qrToken,source,mode,data){
   let no=String(registrationNo||'').trim().toUpperCase(),scanType=mode||currentMode;
   if(!no){msg('err','缺少報到序號');return false}
   currentQr={registrationNo:no,qrToken:qrToken||''};
-  if(pendingItems.some(x=>x.registrationNo===no&&x.scanType===scanType)){msg('warn',no+' 已在「'+modeText[scanType]+'」待寫入清單中');return false}
+  let key=pendingKey(no,scanType);if(pendingKeys.has(key)){msg('warn',no+' 已在「'+modeText[scanType]+'」待寫入清單中');return false}
   pendingItems.push({clientId:makeClientId(),registrationNo:no,qrToken:qrToken||'',scanType:scanType,source:source||'掃描',name:data&&data.name||'',organization:data&&data.organization||'',sessionName:data&&data.sessionName||''});
-  savePendingItems();renderQueue();document.getElementById('qrInput').value='';
+  pendingKeys.add(key);schedulePendingSave();renderQueue();document.getElementById('qrInput').value='';
   msg('ok',no+' 已加入「'+modeText[scanType]+'」待寫入清單');addHistory('info',no+'｜'+modeText[scanType]+'｜已加入清單');
   if(data)renderData(data);if(navigator.vibrate)navigator.vibrate(70);return true
 }
@@ -303,8 +312,8 @@ function renderQueue(){
   if(!q)return;if(!count){q.innerHTML='<div class="muted-empty">尚無待寫入資料</div>';return}
   q.innerHTML=pendingItems.map((x,i)=>'<div class="queue-item"><div><div class="queue-main">'+esc(x.registrationNo)+'｜'+esc(modeText[x.scanType])+'</div><div class="queue-meta">'+esc([x.name,x.organization,x.sessionName,x.source].filter(Boolean).join('｜'))+'</div></div><button class="queue-remove" onclick="removeQueueItem('+i+')">移除</button></div>').join('')
 }
-function removeQueueItem(i){pendingItems.splice(i,1);savePendingItems();renderQueue()}
-function clearQueue(){if(!pendingItems.length)return;if(confirm('確定清空 '+pendingItems.length+' 筆待寫入資料？')){pendingItems=[];savePendingItems();renderQueue();msg('info','待寫入清單已清空')}}
+function removeQueueItem(i){let item=pendingItems[i];if(item)pendingKeys.delete(pendingKey(item.registrationNo,item.scanType));pendingItems.splice(i,1);savePendingItems();renderQueue()}
+function clearQueue(){if(!pendingItems.length)return;if(confirm('確定清空 '+pendingItems.length+' 筆待寫入資料？')){pendingItems=[];pendingKeys.clear();savePendingItems();renderQueue();msg('info','待寫入清單已清空')}}
 async function submitBatch(){
   if(!pendingItems.length){msg('warn','目前沒有待寫入資料');return}
   if(!confirm('確定一次寫入 '+pendingItems.length+' 筆資料？'))return;
@@ -312,16 +321,34 @@ async function submitBatch(){
   try{
     let r=await API.call('staffScanBatch',{token:adminToken,items:sent,operator:'onsite_staff_batch'});
     if(!r.success){msg('err',r.error||'批次寫入失敗');return}
-    let finished={};(r.results||[]).forEach(x=>{let cls=x.success?'ok':(x.alreadyDone?'warn':'err');addHistory(cls,x.registrationNo+'｜'+(modeText[x.scanType]||x.scanType)+'｜'+(x.message||''));if(x.success||x.alreadyDone)finished[x.clientId]=true;if(x.data&&x.success)renderData(x.data)});
-    pendingItems=pendingItems.filter(x=>!finished[x.clientId]);savePendingItems();renderQueue();
+    let finished={};(r.results||[]).forEach(x=>{let cls=x.success?'ok':(x.alreadyDone?'warn':'err');addHistory(cls,x.registrationNo+'｜'+(modeText[x.scanType]||x.scanType)+'｜'+(x.message||''));if(x.success||x.alreadyDone)finished[x.clientId]=true;if(x.data&&x.success){mergeStaffRoster([x.data]);renderData(x.data)}});
+    pendingItems=pendingItems.filter(x=>!finished[x.clientId]);pendingKeys=new Set(pendingItems.map(x=>pendingKey(x.registrationNo,x.scanType)));savePendingItems();renderQueue();
     let duration=Number(r.durationMs||0),durationText=duration?'，耗時 '+(duration/1000).toFixed(1)+' 秒':'';
     msg(r.failed?'warn':'ok','批次完成：成功 '+r.updated+' 筆、已完成略過 '+r.alreadyDone+' 筆、失敗 '+r.failed+' 筆'+durationText+'。');
   }catch(e){msg('err','批次寫入失敗，清單已保留，請確認網路後再送出。')}finally{btn.disabled=false;renderQueue()}
 }
+async function loadStaffRoster(){
+  let requestedSession=selectedSessionId;staffRoster=[];staffRosterReady=false;staffRosterSessionId=requestedSession;
+  if(!requestedSession||!adminToken)return;
+  try{
+    let r=await API.call('staffGetRoster',{token:adminToken,sessionId:requestedSession});
+    if(staffRosterSessionId!==requestedSession||selectedSessionId!==requestedSession)return;
+    if(r.success){staffRoster=r.data||[];staffRosterReady=true}
+  }catch(e){}
+}
+function mergeStaffRoster(rows){
+  if(!staffRosterReady||staffRosterSessionId!==selectedSessionId)return;
+  (rows||[]).forEach(row=>{if(!row||String(row.sessionId||'')!==String(selectedSessionId))return;let i=staffRoster.findIndex(x=>String(x.registrationNo)===String(row.registrationNo));if(i>=0)staffRoster[i]=Object.assign({},staffRoster[i],row);else staffRoster.push(row)})
+}
 async function searchPeople(){
   let keyword=document.getElementById('searchKeyword').value.trim(),box=document.getElementById('searchResults');if(!keyword){box.innerHTML='<div class="muted-empty">請輸入姓名或單位任一字</div>';return}
+  let q=keyword.toLocaleLowerCase();
+  if(staffRosterReady&&staffRosterSessionId===selectedSessionId){
+    let local=staffRoster.filter(d=>[d.name,d.organization].some(v=>String(v||'').toLocaleLowerCase().indexOf(q)>=0)).slice(0,30);
+    if(local.length){searchResults=local;renderSearchResults();return}
+  }
   box.innerHTML='<div class="muted-empty">查詢中...</div>';
-  try{let r=await API.call('staffSearchRegistrations',{token:adminToken,keyword:keyword,sessionId:selectedSessionId});if(!r.success){box.innerHTML='<div class="muted-empty">'+esc(r.error||'查詢失敗')+'</div>';return}searchResults=r.data||[];renderSearchResults()}catch(e){box.innerHTML='<div class="muted-empty">連線失敗，請稍後再試</div>'}
+  try{let r=await API.call('staffSearchRegistrations',{token:adminToken,keyword:keyword,sessionId:selectedSessionId});if(!r.success){box.innerHTML='<div class="muted-empty">'+esc(r.error||'查詢失敗')+'</div>';return}searchResults=r.data||[];mergeStaffRoster(searchResults);renderSearchResults()}catch(e){box.innerHTML='<div class="muted-empty">連線失敗，請稍後再試</div>'}
 }
 function isDoneStatus(v){v=String(v||'');return v.indexOf('已')===0||v.indexOf('完成')>=0}
 function renderSearchResults(){
@@ -344,7 +371,7 @@ async function directCheckin(i,btn){
     let x=(r.results||[])[0];if(!x)throw new Error('未收到報到結果');
     if(x.success||x.alreadyDone){
       d.checkinStatus=(x.data&&x.data.checkinStatus)||'已報到';
-      if(x.data){searchResults[i]=Object.assign({},d,x.data);renderData(x.data)}else renderData(d);
+      if(x.data){searchResults[i]=Object.assign({},d,x.data);mergeStaffRoster([searchResults[i]]);renderData(x.data)}else renderData(d);
       let text=d.registrationNo+'｜'+d.name+'｜'+(x.message||'已完成報到');
       addHistory(x.success?'ok':'warn',text);msg(x.success?'ok':'warn',text);renderSearchResults();
       if(navigator.vibrate)navigator.vibrate(70);return
@@ -370,11 +397,12 @@ async function startCameraScan(){
   if(scanning){document.getElementById('scanState').textContent='連續掃描中：'+modeText[currentMode];return}
   if(typeof Html5Qrcode==='undefined'){msg('warn','掃描套件載入失敗，請改用序號輸入');return}
   try{
-    let qrOnly=typeof Html5QrcodeSupportedFormats!=='undefined'?{formatsToSupport:[Html5QrcodeSupportedFormats.QR_CODE]}:undefined;
-    html5QrCode=new Html5Qrcode('reader',qrOnly,false);
+    let qrOptions={experimentalFeatures:{useBarCodeDetectorIfSupported:true}};
+    if(typeof Html5QrcodeSupportedFormats!=='undefined')qrOptions.formatsToSupport=[Html5QrcodeSupportedFormats.QR_CODE];
+    html5QrCode=new Html5Qrcode('reader',qrOptions,false);
     await html5QrCode.start(
       {facingMode:'environment'},
-      {fps:20,qrbox:function(w,h){let s=Math.floor(Math.min(w,h)*0.72);return{width:s,height:s}},aspectRatio:1.333334},
+      {fps:30,qrbox:function(w,h){let s=Math.floor(Math.min(w,h)*0.80);return{width:s,height:s}},aspectRatio:1.333334,disableFlip:true},
       onScanSuccess,
       function(){}
     );
@@ -385,8 +413,8 @@ async function onScanSuccess(decodedText){
   if(scanBusy)return;let p=parseQrText(decodedText);if(!p)return;
   if(p.error){msg('err',p.error);return}
   let key=p.registrationNo+'|'+p.qrToken+'|'+currentMode,now=Date.now();if(key===lastScanKey&&now-lastScanAt<1500)return;
-  scanBusy=true;lastScanKey=key;lastScanAt=now;document.getElementById('qrInput').value=decodedText;document.getElementById('scanState').textContent='已加入清單：'+p.registrationNo;
-  queueItem(p.registrationNo,p.qrToken,'QR Code 掃描');setTimeout(()=>{scanBusy=false;document.getElementById('scanState').textContent='連續掃描中：'+modeText[currentMode]},150)
+  scanBusy=true;lastScanKey=key;lastScanAt=now;document.getElementById('scanState').textContent='已加入清單：'+p.registrationNo;
+  queueItem(p.registrationNo,p.qrToken,'QR Code 掃描');setTimeout(()=>{scanBusy=false;document.getElementById('scanState').textContent='連續掃描中：'+modeText[currentMode]},60)
 }
 async function stopCameraScan(){try{if(html5QrCode&&scanning){await html5QrCode.stop();await html5QrCode.clear()}}catch(e){}scanning=false;html5QrCode=null;document.getElementById('scannerBox').style.display='none';}
 </script>
