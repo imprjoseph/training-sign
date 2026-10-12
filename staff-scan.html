@@ -226,7 +226,7 @@ button:disabled{opacity:.58;cursor:not-allowed}
     </div>
     <div id="attendanceList" class="attendance-list"><div class="muted-empty">請按下方「重新統計」取得各場最新出席人數</div></div>
     <div class="attendance-tools">
-      <span class="attendance-updated" id="attendanceUpdated"></span>
+      <span class="attendance-updated" id="attendanceUpdated">僅按鈕更新，不會自動同步</span>
       <button class="outline" type="button" onclick="refreshAttendanceStats(true)">重新統計</button>
     </div>
   </div>
@@ -256,7 +256,7 @@ const modeText={checkin:'完成報到',lunch:'領取中餐',gift:'領取伴手�
 function esc(v){return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 function printManual(){document.getElementById('manual').open=true;window.print()}
 function msg(cls,t){document.getElementById('actionMsg').innerHTML='<div class="msg '+cls+'">'+esc(t)+'</div>'}
-function addHistory(cls,t){let l=document.getElementById('historyList');if(l.textContent.trim()==='尚無處理紀錄')l.innerHTML='';let d=document.createElement('div');d.className='item '+cls;d.textContent=new Date().toLocaleTimeString('zh-TW',{hour12:false})+'　'+t;l.insertBefore(d,l.firstChild)}
+function addHistory(cls,t){let l=document.getElementById('historyList');if(l.textContent.trim()==='尚無處理紀錄')l.innerHTML='';let d=document.createElement('div');d.className='item '+cls;d.textContent=new Date().toLocaleTimeString('zh-TW',{hour12:false})+'　'+t;l.insertBefore(d,l.firstChild);while(l.children.length>80)l.lastChild.remove()}
 function setMode(m){currentMode=m;['checkin','lunch','gift'].forEach(x=>document.getElementById('mode-'+x).classList.toggle('active',x===m));document.getElementById('currentModeText').textContent='目前模式：'+modeText[m];msg('info','已切換為「'+modeText[m]+'」模式，接下來掃描或輸入的資料會先加入待寫入清單。')}
 async function login(){try{let r=await API.call('adminLogin',{password:document.getElementById('adminPwd').value});if(!r.success){document.getElementById('loginMsg').innerHTML='<div class="msg err">'+esc(r.error||'登入失敗')+'</div>';return}adminToken=r.token;localStorage.setItem('staff_admin_token',adminToken);document.getElementById('loginPanel').style.display='none';document.getElementById('workPanel').style.display='block';setMode('checkin');renderQueue();loadStaffSessions()}catch(e){document.getElementById('loginMsg').innerHTML='<div class="msg err">連線失敗</div>'}}
 document.addEventListener('DOMContentLoaded',()=>{renderQueue();if(adminToken){document.getElementById('loginPanel').style.display='none';document.getElementById('workPanel').style.display='block';setMode('checkin');loadStaffSessions()}})
@@ -327,18 +327,24 @@ function queueItem(registrationNo,qrToken,source,mode,data){
   if(!no){msg('err','缺少報到序號');return false}
   currentQr={registrationNo:no,qrToken:qrToken||''};
   let key=pendingKey(no,scanType);if(pendingKeys.has(key)){msg('warn',no+' 已在「'+modeText[scanType]+'」待寫入清單中');return false}
-  pendingItems.push({clientId:makeClientId(),registrationNo:no,qrToken:qrToken||'',scanType:scanType,source:source||'掃描',name:data&&data.name||'',organization:data&&data.organization||'',sessionName:data&&data.sessionName||''});
-  pendingKeys.add(key);schedulePendingSave();renderQueue();document.getElementById('qrInput').value='';
+  let item={clientId:makeClientId(),registrationNo:no,qrToken:qrToken||'',scanType:scanType,source:source||'掃描',name:data&&data.name||'',organization:data&&data.organization||'',sessionName:data&&data.sessionName||''};
+  pendingItems.push(item);pendingKeys.add(key);schedulePendingSave();appendQueueItem(item);document.getElementById('qrInput').value='';
   msg('ok',no+' 已加入「'+modeText[scanType]+'」待寫入清單');addHistory('info',no+'｜'+modeText[scanType]+'｜已加入清單');
   if(data)renderData(data);if(navigator.vibrate)navigator.vibrate(70);return true
 }
 function processManualInput(){let p=parseQrText(document.getElementById('qrInput').value);if(!p){msg('err','請輸入報到序號或貼上 QR Code 網址');return}if(p.error){msg('err',p.error);return}queueItem(p.registrationNo,p.qrToken,'手動輸入')}
-function renderQueue(){
-  let count=pendingItems.length,q=document.getElementById('queueList');document.getElementById('queueCount').textContent=count;document.getElementById('scanCount').textContent=count;
+function updateQueueSummary(){
+  let count=pendingItems.length;document.getElementById('queueCount').textContent=count;document.getElementById('scanCount').textContent=count;
   document.getElementById('submitBatchBtn').textContent=count?'一次寫入 '+count+' 筆資料':'一次寫入全部資料';
-  if(!q)return;if(!count){q.innerHTML='<div class="muted-empty">尚無待寫入資料</div>';return}
-  q.innerHTML=pendingItems.map((x,i)=>'<div class="queue-item"><div><div class="queue-main">'+esc(x.registrationNo)+'｜'+esc(modeText[x.scanType])+'</div><div class="queue-meta">'+esc([x.name,x.organization,x.sessionName,x.source].filter(Boolean).join('｜'))+'</div></div><button class="queue-remove" onclick="removeQueueItem('+i+')">移除</button></div>').join('')
 }
+function queueItemHtml(x){return '<div class="queue-item"><div><div class="queue-main">'+esc(x.registrationNo)+'｜'+esc(modeText[x.scanType])+'</div><div class="queue-meta">'+esc([x.name,x.organization,x.sessionName,x.source].filter(Boolean).join('｜'))+'</div></div><button class="queue-remove" data-id="'+esc(x.clientId)+'" onclick="removeQueueItemById(this.dataset.id)">移除</button></div>'}
+function appendQueueItem(item){let q=document.getElementById('queueList');if(!q)return;if(pendingItems.length===1)q.innerHTML='';q.insertAdjacentHTML('beforeend',queueItemHtml(item));updateQueueSummary()}
+function renderQueue(){
+  let count=pendingItems.length,q=document.getElementById('queueList');updateQueueSummary();
+  if(!q)return;if(!count){q.innerHTML='<div class="muted-empty">尚無待寫入資料</div>';return}
+  q.innerHTML=pendingItems.map(queueItemHtml).join('')
+}
+function removeQueueItemById(id){let i=pendingItems.findIndex(x=>String(x.clientId)===String(id));if(i>=0)removeQueueItem(i)}
 function removeQueueItem(i){let item=pendingItems[i];if(item)pendingKeys.delete(pendingKey(item.registrationNo,item.scanType));pendingItems.splice(i,1);savePendingItems();renderQueue()}
 function clearQueue(){if(!pendingItems.length)return;if(confirm('確定清空 '+pendingItems.length+' 筆待寫入資料？')){pendingItems=[];pendingKeys.clear();savePendingItems();renderQueue();msg('info','待寫入清單已清空')}}
 async function submitBatch(){
@@ -352,7 +358,7 @@ async function submitBatch(){
     pendingItems=pendingItems.filter(x=>!finished[x.clientId]);pendingKeys=new Set(pendingItems.map(x=>pendingKey(x.registrationNo,x.scanType)));savePendingItems();renderQueue();
     let duration=Number(r.durationMs||0),durationText=duration?'，耗時 '+(duration/1000).toFixed(1)+' 秒':'';
     msg(r.failed?'warn':'ok','批次完成：成功 '+r.updated+' 筆、已完成略過 '+r.alreadyDone+' 筆、失敗 '+r.failed+' 筆'+durationText+'。');
-  }catch(e){msg('err','批次寫入失敗，清單已保留，請確認網路後再送出。')}finally{btn.disabled=false;renderQueue()}
+  }catch(e){msg('err','批次寫入失敗，清單已保留，請確認網路後再送出。')}finally{btn.disabled=false;updateQueueSummary()}
 }
 async function loadStaffRoster(){
   let requestedSession=selectedSessionId;staffRoster=[];staffRosterReady=false;staffRosterSessionId=requestedSession;
