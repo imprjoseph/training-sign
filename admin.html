@@ -145,7 +145,16 @@ body { background: #f0f4f8; margin: 0; padding-top: 0; overflow-x: hidden; }
           </div>
         </div>
         <div class="stat-grid" id="statGrid"><div class="loading-state">載入中...</div></div>
-        <div class="session-stat-grid" id="sessionStatGrid"></div>
+        <div class="card">
+          <div class="card-title">各場報名及出席統計</div>
+          <div class="table-wrap">
+            <table class="admin-table">
+              <thead><tr><th>日期</th><th>場次</th><th>有效報名</th><th>正取</th><th>候補</th><th>實際出席</th><th>正取出席率</th></tr></thead>
+              <tbody id="sessionStatTbody"><tr><td colspan="7" class="loading-state">載入中...</td></tr></tbody>
+              <tfoot id="sessionStatFoot"></tfoot>
+            </table>
+          </div>
+        </div>
         <div class="two-col">
           <div class="card"><div class="card-title">產業別統計</div><div id="industryStats"></div></div>
           <div class="card"><div class="card-title">飲食需求統計</div><div id="mealStats"></div></div>
@@ -604,14 +613,18 @@ async function loadAllSessions() {
 
     sel.innerHTML = def;
 
-    allSessions.forEach(function(s) {
+    const selectSessions = id === 'dashboardSession'
+      ? allSessions.filter(function(s) { return String(s.status || 'open') !== 'deleted'; })
+      : allSessions;
+
+    selectSessions.forEach(function(s) {
       sel.insertAdjacentHTML(
         'beforeend',
         `<option value="${s.sessionId}">${s.sessionName}</option>`
       );
     });
 
-    if (previousValue && allSessions.some(function(s) { return String(s.sessionId) === String(previousValue); })) {
+    if (previousValue && selectSessions.some(function(s) { return String(s.sessionId) === String(previousValue); })) {
       sel.value = previousValue;
     }
   });
@@ -632,6 +645,9 @@ async function loadDashboard() {
   const sessionId = document.getElementById('dashboardSession').value;
   document.getElementById('statGrid').innerHTML =
     '<div class="loading-state">載入中...</div>';
+  document.getElementById('sessionStatTbody').innerHTML =
+    '<tr><td colspan="7" class="loading-state">載入中...</td></tr>';
+  document.getElementById('sessionStatFoot').innerHTML = '';
 
   try {
     const res = await api('getDashboard', { sessionId: sessionId });
@@ -639,6 +655,8 @@ async function loadDashboard() {
     if (!res.success) {
       document.getElementById('statGrid').innerHTML =
         '<div class="loading-state">載入失敗：' + (res.error || '') + '</div>';
+      document.getElementById('sessionStatTbody').innerHTML =
+        '<tr><td colspan="7" class="empty-state">統計載入失敗</td></tr>';
       return;
     }
 
@@ -679,26 +697,34 @@ async function loadDashboard() {
       </div>
     `;
 
-    document.getElementById('sessionStatGrid').innerHTML =
-      d.sessionStats.map(function(s) {
-        const percent = s.capacity > 0
-          ? Math.min(100, s.confirmed / s.capacity * 100)
-          : 0;
-
-        return `
-          <div class="session-stat-card">
-            <div class="session-stat-name">${s.sessionName}</div>
-            <div class="session-stat-bar">
-              <div class="session-stat-fill" style="width:${percent}%"></div>
-            </div>
-            <div class="session-stat-nums">
-              <span>正取 ${s.confirmed}/${s.capacity}</span>
-              <span>候補 ${s.waitlist}</span>
-              <span>報到 ${s.checkedIn}</span>
-            </div>
-          </div>
-        `;
+    const sessionStats = Array.isArray(d.sessionStats) ? d.sessionStats : [];
+    const statBody = document.getElementById('sessionStatTbody');
+    const statFoot = document.getElementById('sessionStatFoot');
+    if (!sessionStats.length) {
+      statBody.innerHTML = '<tr><td colspan="7" class="empty-state">目前沒有場次統計資料</td></tr>';
+      statFoot.innerHTML = '';
+    } else {
+      statBody.innerHTML = sessionStats.map(function(s) {
+        const registered = Number(s.registered != null ? s.registered : Number(s.confirmed || 0) + Number(s.waitlist || 0));
+        const rate = Number(s.confirmed || 0) > 0 ? Math.round(Number(s.checkedIn || 0) * 1000 / Number(s.confirmed || 0)) / 10 : 0;
+        return `<tr>
+          <td>${[s.date, s.startTime].filter(Boolean).join(' ') || '—'}</td>
+          <td><strong>${s.sessionName || s.sessionId || '—'}</strong></td>
+          <td>${registered} 人</td>
+          <td>${Number(s.confirmed || 0)} 人</td>
+          <td>${Number(s.waitlist || 0)} 人</td>
+          <td><span class="badge badge-checkin">${Number(s.checkedIn || 0)} 人</span></td>
+          <td>${rate}%</td>
+        </tr>`;
       }).join('');
+
+      const totals = sessionStats.reduce(function(o, s) {
+        o.registered += Number(s.registered != null ? s.registered : Number(s.confirmed || 0) + Number(s.waitlist || 0));
+        o.confirmed += Number(s.confirmed || 0);o.waitlist += Number(s.waitlist || 0);o.checkedIn += Number(s.checkedIn || 0);return o;
+      }, { registered: 0, confirmed: 0, waitlist: 0, checkedIn: 0 });
+      const totalRate = totals.confirmed ? Math.round(totals.checkedIn * 1000 / totals.confirmed) / 10 : 0;
+      statFoot.innerHTML = `<tr style="font-weight:800;background:#f8faff"><td colspan="2">合計</td><td>${totals.registered} 人</td><td>${totals.confirmed} 人</td><td>${totals.waitlist} 人</td><td>${totals.checkedIn} 人</td><td>${totalRate}%</td></tr>`;
+    }
 
     document.getElementById('industryStats').innerHTML =
       Object.entries(d.industryStats).map(function([k, v]) {
@@ -723,6 +749,8 @@ async function loadDashboard() {
   } catch (err) {
     document.getElementById('statGrid').innerHTML =
       '<div class="loading-state">系統錯誤：' + err.message + '</div>';
+    document.getElementById('sessionStatTbody').innerHTML =
+      '<tr><td colspan="7" class="empty-state">統計載入失敗</td></tr>';
   }
 }
 
