@@ -326,13 +326,19 @@ body { background: #f0f4f8; margin: 0; padding-top: 0; overflow-x: hidden; }
 如有任何問題，歡迎與國土署個資宣導活動秘書處聯絡。</textarea>
             </label>
             <small style="color:#64748b;">可使用：{{姓名}}、{{單位}}、{{場次}}、{{日期}}、{{時間}}、{{地點}}、{{地址}}、{{報到序號}}。個人場次資訊與 QR Code 會自動附在內文後方。</small>
+            <label style="font-weight:700;color:#334155;">更正原因（重寄更正信時必填）
+              <input class="filter-input" id="correctionReason" style="width:100%;box-sizing:border-box;margin-top:6px;" placeholder="例如：原通知的活動時間誤植，重新寄送正確資訊">
+            </label>
           </div>
           <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
             <strong style="color:#1a3a6b;">逐一確認收件人</strong>
             <span id="reminderSelectedCount" style="color:#64748b;font-size:.875rem;">已勾選 0 人</span>
           </div>
           <div id="reminderRecipients" style="margin-top:8px;border:1px solid #e2e8f0;border-radius:10px;max-height:360px;overflow:auto;padding:0 12px;color:#64748b;font-size:.875rem;">請先選擇場次並載入名單。</div>
-          <button class="admin-btn admin-btn-primary" id="sendReminderBtn" onclick="sendReminderSelected()" style="margin-top:14px;" disabled>✉️ 寄送已勾選的 0 人</button>
+          <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="admin-btn admin-btn-primary" id="sendReminderBtn" onclick="sendReminderSelected()" disabled>✉️ 寄送未寄名單 0 人</button>
+            <button class="admin-btn admin-btn-outline" id="resendCorrectionBtn" onclick="resendCorrectionSelected()" disabled style="border-color:#d97706;color:#b45309;">⚠️ 重寄更正信 0 人</button>
+          </div>
         </div>
       </div>
 
@@ -1430,12 +1436,14 @@ async function loadReminderRecipients() {
     box.innerHTML = '<div style="padding:12px;">本場次沒有可寄送的正取報名者。</div>';
   } else {
     box.innerHTML = reminderRecipients.map(function(r) {
-      const disabled = r.sent ? ' disabled' : '';
-      const state = r.sent ? '<span style="color:#16a34a;font-weight:700;">已寄送</span>' : '<span style="color:#dc2626;">待確認</span>';
-      return '<label style="display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid #e2e8f0;cursor:' + (r.sent ? 'default' : 'pointer') + ';">' +
-        '<input type="checkbox" class="reminder-recipient-check" value="' + reminderEsc(r.registrationNo) + '" onchange="updateReminderSelectedCount()"' + disabled + ' style="margin-top:4px;">' +
+      const correction = r.correctionSent
+        ? '<br><small style="color:#b45309;">已重寄更正：' + reminderEsc(r.correctionSentAt || '') + (r.correctionReason ? '｜' + reminderEsc(r.correctionReason) : '') + '</small>'
+        : '';
+      const state = r.sent ? '<span style="color:#16a34a;font-weight:700;">已寄送</span>' : '<span style="color:#dc2626;">待寄送</span>';
+      return '<label style="display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid #e2e8f0;cursor:pointer;">' +
+        '<input type="checkbox" class="reminder-recipient-check" value="' + reminderEsc(r.registrationNo) + '" data-sent="' + (r.sent ? 'true' : 'false') + '" onchange="updateReminderSelectedCount()" style="margin-top:4px;">' +
         '<span style="flex:1;"><strong style="color:#1a3a6b;">' + reminderEsc(r.name) + '</strong>｜' + reminderEsc(r.registrationNo) +
-        '<br><small>' + reminderEsc(r.organization) + '｜' + reminderEsc(r.email) + '</small></span>' + state + '</label>';
+        '<br><small>' + reminderEsc(r.organization) + '｜' + reminderEsc(r.email) + '</small>' + correction + '</span>' + state + '</label>';
     }).join('');
   }
   await loadReminderStatus();
@@ -1445,15 +1453,22 @@ async function loadReminderRecipients() {
 function updateReminderSelectedCount() {
   const checked = Array.from(document.querySelectorAll('.reminder-recipient-check:checked'));
   const count = checked.length;
-  document.getElementById('reminderSelectedCount').textContent = '已勾選 ' + count + ' 人';
-  const btn = document.getElementById('sendReminderBtn');
-  btn.disabled = count === 0;
-  btn.textContent = '✉️ 寄送已勾選的 ' + count + ' 人';
+  const pendingCount = checked.filter(function(el) { return el.dataset.sent !== 'true'; }).length;
+  const sentCount = checked.filter(function(el) { return el.dataset.sent === 'true'; }).length;
+  document.getElementById('reminderSelectedCount').textContent = '已勾選 ' + count + ' 人（未寄 ' + pendingCount + '／已寄 ' + sentCount + '）';
+  const sendBtn = document.getElementById('sendReminderBtn');
+  const correctionBtn = document.getElementById('resendCorrectionBtn');
+  sendBtn.disabled = pendingCount === 0;
+  sendBtn.textContent = '✉️ 寄送未寄名單 ' + pendingCount + ' 人';
+  correctionBtn.disabled = sentCount === 0;
+  correctionBtn.textContent = '⚠️ 重寄更正信 ' + sentCount + ' 人';
 }
 
 async function sendReminderSelected() {
   const sessionId = document.getElementById('reminderSession').value;
-  const registrationNos = Array.from(document.querySelectorAll('.reminder-recipient-check:checked')).map(function(el) { return el.value; });
+  const registrationNos = Array.from(document.querySelectorAll('.reminder-recipient-check:checked'))
+    .filter(function(el) { return el.dataset.sent !== 'true'; })
+    .map(function(el) { return el.value; });
   const subject = document.getElementById('reminderSubject').value.trim();
   const body = document.getElementById('reminderBody').value.trim();
   if (!sessionId || !registrationNos.length) {
@@ -1476,6 +1491,51 @@ async function sendReminderSelected() {
     await loadReminderRecipients();
   } catch (error) {
     alert('❌ 寄送失敗：' + error.message);
+  } finally {
+    updateReminderSelectedCount();
+  }
+}
+
+async function resendCorrectionSelected() {
+  const sessionId = document.getElementById('reminderSession').value;
+  const registrationNos = Array.from(document.querySelectorAll('.reminder-recipient-check:checked'))
+    .filter(function(el) { return el.dataset.sent === 'true'; })
+    .map(function(el) { return el.value; });
+  const subject = document.getElementById('reminderSubject').value.trim();
+  const body = document.getElementById('reminderBody').value.trim();
+  const reason = document.getElementById('correctionReason').value.trim();
+  if (!sessionId || !registrationNos.length) {
+    alert('請選擇場次，並勾選已寄送、需要收到更正信的與會者。');
+    return;
+  }
+  if (!subject || !body) {
+    alert('請先將主旨與內文修改為正確內容。');
+    return;
+  }
+  if (!reason) {
+    alert('請填寫更正原因。');
+    document.getElementById('correctionReason').focus();
+    return;
+  }
+  const session = allSessions.find(function(s) { return String(s.sessionId) === String(sessionId); });
+  const finalSubject = /^【更正/.test(subject) ? subject : '【更正通知】' + subject;
+  if (!confirm('重寄更正信確認\n\n場次：' + (session ? session.sessionName : sessionId) + '\n收件人：' + registrationNos.length + ' 人\n主旨：' + finalSubject + '\n更正原因：' + reason + '\n\n確定寄出？信件送出後無法收回。')) return;
+  const btn = document.getElementById('resendCorrectionBtn');
+  btn.disabled = true;
+  btn.textContent = '重寄中...';
+  try {
+    const res = await api('resendCorrectionSelected', {
+      sessionId: sessionId,
+      registrationNos: registrationNos,
+      subject: subject,
+      body: body,
+      reason: reason
+    });
+    const detail = res.errors && res.errors.length ? '\n\n詳細原因：\n' + res.errors.join('\n') : '';
+    alert((res.success ? '✅ ' + res.message : '❌ ' + (res.error || '重寄失敗')) + detail);
+    await loadReminderRecipients();
+  } catch (error) {
+    alert('❌ 重寄失敗：' + error.message);
   } finally {
     updateReminderSelectedCount();
   }
