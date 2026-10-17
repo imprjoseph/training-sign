@@ -1405,7 +1405,7 @@ async function loadReminderStatus() {
       : item.daysUntil >= 0 ? '距活動 ' + item.daysUntil + ' 天' : '活動已結束';
     return '<div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #e2e8f0;flex-wrap:wrap;">' +
       '<span><strong style="color:#1a3a6b;">' + item.sessionName + '</strong><br><small>' + item.date + '｜' + dayText + '</small></span>' +
-      '<span>待寄 <strong style="color:#dc2626;">' + item.pending + '</strong>｜已寄 <strong style="color:#16a34a;">' + item.sent + '</strong></span>' +
+      '<span>待寄 <strong style="color:#dc2626;">' + item.pending + '</strong>｜已寄 <strong style="color:#16a34a;">' + item.sent + '</strong>｜無 Email <strong style="color:#d97706;">' + (item.noEmail || 0) + '</strong></span>' +
       '</div>';
   }).join('');
 }
