@@ -500,7 +500,21 @@ let reminderRecipients = [];
 async function api(action, data = {}) {
   const publicActions = ['adminLogin'];
   const payload = publicActions.includes(action) ? data : { token: adminToken, ...data };
-  return API.call(action, payload);
+  const result = await API.call(action, payload);
+  if (result && result.unauthorized) {
+    clearAdminSession('登入已失效，請重新登入。');
+  }
+  return result;
+}
+
+function clearAdminSession(message) {
+  adminToken = '';
+  sessionStorage.removeItem('admin_token');
+  localStorage.removeItem('staff_admin_token');
+  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('adminPage').style.display = 'none';
+  document.getElementById('loginPwd').value = '';
+  document.getElementById('loginErr').textContent = message || '';
 }
 
 async function login() {
@@ -543,8 +557,7 @@ async function login() {
 }
 
 function logout() {
-  sessionStorage.removeItem('admin_token');
-  location.reload();
+  clearAdminSession('');
 }
 
 function initAdmin() {
@@ -563,10 +576,7 @@ async function restoreAdminSession() {
     document.getElementById('adminPage').style.display = 'block';
     initAdmin();
   } catch (error) {
-    adminToken = '';
-    sessionStorage.removeItem('admin_token');
-    document.getElementById('loginPage').style.display = 'flex';
-    document.getElementById('adminPage').style.display = 'none';
+    clearAdminSession('');
   }
 }
 
